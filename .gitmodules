@@ -1,0 +1,3 @@
+[submodule "src/tarantula/winfsp"]
+	path = src/tarantula/winfsp
+	url = https://github.com/billziss-gh/winfsp.git
