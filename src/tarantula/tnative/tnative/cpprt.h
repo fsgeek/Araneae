@@ -19,6 +19,7 @@ extern "C" {
 	NTSTATUS cpp_rt_post_init(PDRIVER_OBJECT DriverObject, const PUNICODE_STRING RegistryPath) noexcept;
 }
 
+#if 0
 __drv_allocatesMem(Mem)
 _When_((PoolType& PagedPool) != 0, _IRQL_requires_max_(APC_LEVEL))
 _When_((PoolType& PagedPool) == 0, _IRQL_requires_max_(DISPATCH_LEVEL))
@@ -68,3 +69,4 @@ void* __cdecl operator new(size_t size, void* buffer);
 
 void __cdecl operator delete(void* pVoid, ULONG tag);
 void __cdecl operator delete(void* pVoid);
+#endif // 0

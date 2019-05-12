@@ -25,6 +25,10 @@ class TNativeDevice
 	void* operator new(_In_ size_t size);
 	void operator delete(_In_ _Post_invalid_ void* memory);
 
+protected:
+	void SetDeviceObject(_In_ PDEVICE_OBJECT DeviceObject) noexcept { m_DeviceObject = DeviceObject; }
+	void DeleteDeviceObject(void) noexcept { if (nullptr != m_DeviceObject) IoDeleteDevice(m_DeviceObject); m_DeviceObject = nullptr; }
+
 public:
 	virtual NTSTATUS Create(_In_ PIRP Irp) { return InvalidDeviceRequest(Irp); }
 	virtual NTSTATUS CreateNamedPipe(_In_ PIRP Irp) { return InvalidDeviceRequest(Irp); }
@@ -54,7 +58,7 @@ public:
 	virtual NTSTATUS SetQuota(_In_ PIRP Irp) { return InvalidDeviceRequest(Irp); }
 	virtual NTSTATUS PnP(_In_ PIRP Irp) { return InvalidDeviceRequest(Irp); }
 	virtual NTSTATUS CompleteRequest(_In_ _Post_invalid_ PIRP Irp, NTSTATUS Status);
-	virtual ~TNativeDevice() { /* object lives inside the device extension */};
+	virtual ~TNativeDevice() noexcept { /* object lives inside the device extension */};
 
 	PDEVICE_OBJECT GetDeviceObject(void) noexcept { return m_DeviceObject; }
 

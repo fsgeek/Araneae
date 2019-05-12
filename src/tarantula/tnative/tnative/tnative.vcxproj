@@ -144,6 +144,7 @@
     <ClCompile>
       <EnablePREfast>true</EnablePREfast>
       <PreprocessorDefinitions>_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions);-DWIL_KERNEL_MODE=1</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalOptions>/ignore:4210 %(AdditionalOptions)</AdditionalOptions>
@@ -153,6 +154,7 @@
     <ClCompile>
       <EnablePREfast>true</EnablePREfast>
       <PreprocessorDefinitions>_X86_=1;i386=1;STD_CALL;%(PreprocessorDefinitions);-DWIL_KERNEL_MODE=1</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalOptions>/ignore:4210 %(AdditionalOptions)</AdditionalOptions>
@@ -162,6 +164,7 @@
     <ClCompile>
       <EnablePREfast>true</EnablePREfast>
       <PreprocessorDefinitions>_WIN64;_AMD64_;AMD64;%(PreprocessorDefinitions);-DWIL_KERNEL_MODE=1</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalOptions>/ignore:4210 %(AdditionalOptions)</AdditionalOptions>
@@ -171,6 +174,7 @@
     <ClCompile>
       <EnablePREfast>true</EnablePREfast>
       <PreprocessorDefinitions>_WIN64;_AMD64_;AMD64;%(PreprocessorDefinitions);-DWIL_KERNEL_MODE=1</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalOptions>/ignore:4210 %(AdditionalOptions)</AdditionalOptions>
@@ -186,8 +190,12 @@
     <ClCompile Include="cpprt.cpp" />
     <ClCompile Include="entry.cpp" />
     <ClCompile Include="TNativeDevice.cpp" />
+    <ClCompile Include="TNativeFileContext.cpp" />
+    <ClCompile Include="TNativeFileObject.cpp" />
+    <ClCompile Include="TNControlDevice.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\TarantulaControl.h" />
     <ClInclude Include="cpprt.h" />
     <ClInclude Include="include\wil\com.h" />
     <ClInclude Include="include\wil\common.h" />
@@ -210,6 +218,10 @@
     <ClInclude Include="include\wil\wrl.h" />
     <ClInclude Include="tnative-resource.h" />
     <ClInclude Include="TNativeDevice.h" />
+    <ClInclude Include="TNativeFileContext.h" />
+    <ClInclude Include="TNativeFileObject.h" />
+    <ClInclude Include="TNativeLock.h" />
+    <ClInclude Include="TNControlDevice.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

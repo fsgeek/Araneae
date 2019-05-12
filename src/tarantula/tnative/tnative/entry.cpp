@@ -3,6 +3,7 @@
 //#include "cpprt.h"
 #include "tnative-resource.h"
 #include "TNativeDevice.h"
+#include "cpprt.h"
 
 static TNativeDevice *TNControlDevice;
 static WCHAR TNativeDeviceNameString[] = L"\\Tarantula";
@@ -35,26 +36,18 @@ extern "C" DRIVER_INITIALIZE DriverEntry;
 extern "C" NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath)
 {
 	NTSTATUS status = STATUS_SUCCESS;
-	//NTSTATUS status2 = STATUS_NOT_SUPPORTED;
 	UNREFERENCED_PARAMETER(DriverObject);
 	UNREFERENCED_PARAMETER(RegistryPath);
 
 	DbgBreakPoint(); // initial debug breakpoint
 
-#if 0
 	status = cpp_rt_pre_init();
 	if (!NT_SUCCESS(status)) {
 		return status;
 	}
-#endif // 0
 
 	// I use a loop for clean exit control
 	while (NT_SUCCESS(status)) {
-		TNControlDevice = TNativeDevice::CreateTNativeDevice(DriverObject, &TNativeDeviceName);
-		if (nullptr == TNControlDevice) {
-			status = STATUS_NO_MEMORY;
-			break;
-		}
 
 		DriverObject->DriverUnload = TNativeUnload;
 
@@ -62,14 +55,19 @@ extern "C" NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING Reg
 		break;
 	}
 
-#if 0
-	status2 = cpp_rt_post_init(DriverObject, RegistryPath);
-	if (!NT_SUCCESS(status2)) {
-		return NT_SUCCESS(status) ? status2 : status; // things are seriously screwed up
+	status = cpp_rt_post_init(DriverObject, RegistryPath);
+
+	while (NT_SUCCESS(status)) {
+		TNControlDevice = TNativeDevice::CreateTNativeDevice(DriverObject, &TNativeDeviceName);
+		if (nullptr == TNControlDevice) {
+			status = STATUS_NO_MEMORY;
+			break;
+		}
+
 	}
-#endif // 0
 
 	if (!NT_SUCCESS(status)) {
+	
 		// something went wrong, so we will go through the cleanup path.
 		if (nullptr != DriverObject) {
 			DriverObject->DriverUnload(DriverObject);

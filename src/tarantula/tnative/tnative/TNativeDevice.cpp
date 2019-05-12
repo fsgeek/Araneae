@@ -87,5 +87,7 @@ TNativeDevice* TNativeDevice::CreateTNativeDevice(_In_ PDRIVER_OBJECT DriverObje
 void TNativeDevice::DeleteTNativeDevice(_In_ _Post_invalid_ TNativeDevice* NativeDevice) noexcept
 {
 	// Note: this also deletes the OBJECT
-	IoDeleteDevice(NativeDevice->m_DeviceObject);
+	if (nullptr != NativeDevice) {
+		NativeDevice->DeleteDeviceObject();
+	}
 }
