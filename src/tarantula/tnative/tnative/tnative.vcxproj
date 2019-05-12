@@ -193,6 +193,7 @@
     <ClCompile Include="TNativeFileContext.cpp" />
     <ClCompile Include="TNativeFileObject.cpp" />
     <ClCompile Include="TNControlDevice.cpp" />
+    <ClCompile Include="TNRegistry.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\TarantulaControl.h" />
@@ -222,6 +223,7 @@
     <ClInclude Include="TNativeFileObject.h" />
     <ClInclude Include="TNativeLock.h" />
     <ClInclude Include="TNControlDevice.h" />
+    <ClInclude Include="TNRegistry.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
