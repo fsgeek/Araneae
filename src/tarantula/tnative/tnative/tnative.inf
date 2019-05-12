@@ -1,0 +1,55 @@
+;
+; tnative.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=System
+ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318}
+Provider=%ProviderName%
+DriverVer = 05/05/2019,22.31.17.261
+CatalogFile=tnative.cat
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+tnative.sys = 1,,
+
+[DefaultInstall.ntamd64]
+OptionDesc  = %ServiceDescription%
+CopyFiles = tnative.DriverFiles
+
+[DefaultInstall.ntamd64.Services]
+AddService = %ServiceName%,,tnative.Service
+
+[DefaultUninstall.ntamd64]
+LegacyUninstall=1
+DelService = %ServiceName%,0x200      ;Ensure service is stopped before deleting
+
+[tnative.DriverFiles]
+%DriverName%.sys
+
+[tnative.AddRegistry]
+HKR,,BreakOnEntry,FLG_ADDREG_TYPE_DWORD,1
+
+[tnative.Service]
+DisplayName      = %ServiceName%
+Description      = %ServiceDescription%
+ServiceBinary    = %12%\%DriverName%.sys        ;%windir%\system32\drivers\
+ServiceType      = 2                            ;SERVICE_FILE_SYSTEM_DRIVER
+StartType        = 3                            ;SERVICE_DEMAND_START
+ErrorControl     = 1                            ;SERVICE_ERROR_NORMAL
+LoadOrderGroup   = "File System"
+AddReg           = tnative.AddRegistry
+
+
+[Strings]
+ProviderName="Tony Mason"
+DiskName="tnative Installation Disk"
+ServiceDescription = "Tarantula Native File System for Project Araneae"
+DriverName = "tnative"
+ServiceName = %DriverName%
