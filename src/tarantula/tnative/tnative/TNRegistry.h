@@ -1,6 +1,7 @@
 #pragma once
 #include <ntifs.h>
 #include "tnative-resource.h"
+#include "TNativeLock.h"
 
 union MemoryTag {
 	UCHAR tag[4];
@@ -9,12 +10,12 @@ union MemoryTag {
 
 class TNRegistry
 {
-
 	static const MemoryTag DefaultMemoryTag;
 	static const MemoryTag DefaultStringTag;
 
 	UNICODE_STRING m_RegistryPath = { 0, 0, nullptr };
 	HANDLE m_RegistryHandle = nullptr;
+	TNativeLock m_Lock;
 
 #pragma warning(push)
 #pragma warning(disable:26447) // prefast annotations do not throw exceptions; neither does this function
@@ -26,17 +27,21 @@ class TNRegistry
 	void operator delete(__drv_freesMem(mem) void* mem) { ExFreePoolWithTag(mem, DefaultMemoryTag.tagvalue); }
 
 	HANDLE GetRegistryHandle(void) noexcept { return m_RegistryHandle; }
+	NTSTATUS LoadRegistryValues();
 
 	TNRegistry() noexcept {};
 	~TNRegistry() noexcept {};
 public:
-	static _Must_inspect_result_ TNRegistry* CreateTNRegistry(_In_opt_ PCUNICODE_STRING RegistryPath) noexcept;
-	static _Must_inspect_result_ TNRegistry* CreateTNRegistry(_In_ TNRegistry *Registry, _In_ PCUNICODE_STRING RegistryPath) noexcept;
-	static void DeleteTNRegistry(_In_ _Post_ptr_invalid_ TNRegistry* Registry) noexcept;
 	// we don't implement these, so we delete the default implementations.
 	TNRegistry(const TNRegistry&) = delete;
 	TNRegistry& operator=(const TNRegistry& Registry) = delete;
 	TNRegistry(TNRegistry&&) = delete;
 	TNRegistry& operator=(TNRegistry&&) = delete;
+
+	static _Must_inspect_result_ TNRegistry* CreateTNRegistry(_In_opt_ PCUNICODE_STRING RegistryPath) noexcept;
+	static _Must_inspect_result_ TNRegistry* CreateTNRegistry(_In_ TNRegistry *Registry, _In_ PCUNICODE_STRING RegistryPath) noexcept;
+	static void DeleteTNRegistry(_In_ _Post_ptr_invalid_ TNRegistry* Registry) noexcept;
+	_Must_inspect_result_ NTSTATUS ReadDwordValue(_In_ PUNICODE_STRING ValueName, _Out_ ULONG& Value);
+
 };
 

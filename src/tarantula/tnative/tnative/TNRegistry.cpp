@@ -1,4 +1,5 @@
 #include "TNRegistry.h"
+#include "TNativeLock.h"
 
 static NTSTATUS CopyRegistryPath(_In_ PCUNICODE_STRING ExistingPath, _In_ PUNICODE_STRING NewPath, ULONG Tag) noexcept
 {
@@ -53,6 +54,10 @@ static HANDLE OpenRegistry(_In_opt_ HANDLE RegistryHandle, _In_ PUNICODE_STRING 
 }
 
 _Use_decl_annotations_
+NTSTATUS TNRegistry::LoadRegistryValues()
+{
+	return NTSTATUS();
+}
 TNRegistry* TNRegistry::CreateTNRegistry(PCUNICODE_STRING RegistryPath) noexcept
 {
 #pragma warning(suppress:6014 26400 26409) // in kernel, this is how we allocate memory.
@@ -160,6 +165,48 @@ void TNRegistry::DeleteTNRegistry(TNRegistry* Registry) noexcept
 		break;
 	}
 }
+
+_Use_decl_annotations_
+NTSTATUS TNRegistry::ReadDwordValue(PUNICODE_STRING ValueName, ULONG& Value)
+{
+	NTSTATUS status = STATUS_UNSUCCESSFUL;
+	UNREFERENCED_PARAMETER(ValueName);
+	Value = 0;
+#if 0
+	union {
+		ULONGLONG padding[8];
+		KEY_VALUE_BASIC_INFORMATION basicinfo;
+		KEY_VALUE_FULL_INFORMATION fullinfo;
+		UCHAR data[1];
+	} regvalue = { 0 };
+	ULONG outlength;
+	
+	if (nullptr == m_RegistryHandle) {
+		return STATUS_INVALID_HANDLE;
+	}
+
+	status = ZwQueryValueKey(m_RegistryHandle, ValueName, KeyValueFullInformation, &regvalue, sizeof(regvalue), &outlength);
+	if (!NT_SUCCESS(status)) {
+		return status;
+	}
+
+	// check bounds
+	if (regvalue.fullinfo.DataOffset + )
+
+	RtlCopyMemory(&Value, &regvalue.data[regvalue.fullinfo.DataOffset], regvalue.fullinfo.DataLength);
+#endif // 0
+	return status;
+}
+
+#if 0
+NTSTATUS TNRegistry::ReadStringValue(UNICODE_STRING& Value)
+{
+	NTSTATUS status = STATUS_UNSUCCESSFUL;
+
+	return status
+}
+#endif // 0
+
 
 const MemoryTag TNRegistry::DefaultMemoryTag = { 'e','r','N','T' };
 const MemoryTag TNRegistry::DefaultStringTag = { 's', 'r', 'N', 'T' };
