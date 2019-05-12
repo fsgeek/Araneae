@@ -2,17 +2,17 @@
 #include <ntstatus.h>
 //#include "cpprt.h"
 #include "tnative-resource.h"
-#include "TNativeDevice.h"
+#include "TNControlDevice.h"
 #include "cpprt.h"
 
-static TNativeDevice *TNControlDevice;
-static WCHAR TNativeDeviceNameString[] = L"\\Tarantula";
+static TNControlDevice *TarantulaControlDevice;
+static WCHAR TarantulaControlDeviceNameString[] = L"\\Tarantula";
 #pragma warning(push)
 #pragma warning(disable:26485) // yes, I know the string isn't a C++ string with array bounds
 static UNICODE_STRING TNativeDeviceName = {
-	sizeof(TNativeDeviceNameString),
-	sizeof(TNativeDeviceNameString) - sizeof(WCHAR),
-	TNativeDeviceNameString
+	sizeof(TarantulaControlDeviceNameString),
+	sizeof(TarantulaControlDeviceNameString) - sizeof(WCHAR),
+	TarantulaControlDeviceNameString
 };
 #pragma warning(pop)
 
@@ -23,9 +23,9 @@ static void TNativeUnload(PDRIVER_OBJECT DriverObject)
 {
 	UNREFERENCED_PARAMETER(DriverObject);
 
-	if (nullptr != TNControlDevice) {
-		TNativeDevice::DeleteTNativeDevice(TNControlDevice);
-		TNControlDevice = nullptr;
+	if (nullptr != TarantulaControlDevice) {
+		TarantulaControlDevice->DeleteTNControlDevice(TarantulaControlDevice);
+		TarantulaControlDevice = nullptr;
 	}
 	return;
 }
@@ -58,8 +58,8 @@ extern "C" NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING Reg
 	status = cpp_rt_post_init(DriverObject, RegistryPath);
 
 	while (NT_SUCCESS(status)) {
-		TNControlDevice = TNativeDevice::CreateTNativeDevice(DriverObject, &TNativeDeviceName);
-		if (nullptr == TNControlDevice) {
+		TarantulaControlDevice = TNControlDevice::CreateTNControlDevice(DriverObject, &TNativeDeviceName);
+		if (nullptr == TarantulaControlDevice) {
 			status = STATUS_NO_MEMORY;
 			break;
 		}

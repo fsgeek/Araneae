@@ -93,7 +93,7 @@ NTSTATUS TNControlDevice::Cleanup(PIRP Irp)
 #pragma warning(disable:6014) // it insists the device object is being leaked, but we've saved it
 #pragma warning(disable:26447) // we are in the kernel; new does not throw exceptions
 _Use_decl_annotations_
-TNControlDevice* TNControlDevice::CreateTControlDevice(PDRIVER_OBJECT DriverObject, PUNICODE_STRING DeviceName) noexcept
+TNControlDevice* TNControlDevice::CreateTNControlDevice(PDRIVER_OBJECT DriverObject, PUNICODE_STRING DeviceName) noexcept
 {
 	PDEVICE_OBJECT deviceObject = nullptr;
 	TNControlDevice* tnDevObj = nullptr;
