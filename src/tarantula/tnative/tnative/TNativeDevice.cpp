@@ -61,7 +61,7 @@ TNativeDevice* TNativeDevice::CreateTNativeDevice(_In_ PDRIVER_OBJECT DriverObje
 	while (NT_SUCCESS(status)) {
 
 		if ((nullptr == deviceObject) || (nullptr == deviceObject->DeviceExtension)) {
-			status = STATUS_NO_MEMORY;
+			status = STATUS_INSUFFICIENT_RESOURCES;
 			break;
 		}
 

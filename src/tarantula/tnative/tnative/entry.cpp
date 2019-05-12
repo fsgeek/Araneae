@@ -3,16 +3,25 @@
 //#include "cpprt.h"
 #include "tnative-resource.h"
 #include "TNControlDevice.h"
+#include "TNRegistry.h"
 #include "cpprt.h"
 
+static TNRegistry* TarantulaRegistry;
+static TNRegistry* TarantulaRegistryParameters;
 static TNControlDevice *TarantulaControlDevice;
 static WCHAR TarantulaControlDeviceNameString[] = L"\\Tarantula";
 #pragma warning(push)
 #pragma warning(disable:26485) // yes, I know the string isn't a C++ string with array bounds
 static UNICODE_STRING TNativeDeviceName = {
-	sizeof(TarantulaControlDeviceNameString),
 	sizeof(TarantulaControlDeviceNameString) - sizeof(WCHAR),
+	sizeof(TarantulaControlDeviceNameString),
 	TarantulaControlDeviceNameString
+};
+static WCHAR RegistryParametersNameString[] = L"Parameters";
+static UNICODE_STRING RegistryParametersName = {
+	sizeof(RegistryParametersNameString) - sizeof(WCHAR),
+	sizeof(RegistryParametersNameString),
+	RegistryParametersNameString
 };
 #pragma warning(pop)
 
@@ -26,6 +35,16 @@ static void TNativeUnload(PDRIVER_OBJECT DriverObject)
 	if (nullptr != TarantulaControlDevice) {
 		TarantulaControlDevice->DeleteTNControlDevice(TarantulaControlDevice);
 		TarantulaControlDevice = nullptr;
+	}
+
+	if (nullptr != TarantulaRegistryParameters) {
+		TarantulaRegistryParameters->DeleteTNRegistry(TarantulaRegistryParameters);
+		TarantulaRegistryParameters = nullptr;
+	}
+
+	if (nullptr != TarantulaRegistry) {
+		TarantulaRegistry->DeleteTNRegistry(TarantulaRegistry);
+		TarantulaRegistry = nullptr;
 	}
 	return;
 }
@@ -58,9 +77,22 @@ extern "C" NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING Reg
 	status = cpp_rt_post_init(DriverObject, RegistryPath);
 
 	while (NT_SUCCESS(status)) {
+
+		TarantulaRegistry = TNRegistry::CreateTNRegistry(RegistryPath);
+		if (nullptr == TarantulaRegistry) {
+			status = STATUS_INSUFFICIENT_RESOURCES;
+			break;
+		}
+
+		TarantulaRegistryParameters = TNRegistry::CreateTNRegistry(TarantulaRegistry, &RegistryParametersName);
+		if (nullptr == TarantulaRegistryParameters) {
+			status = STATUS_INSUFFICIENT_RESOURCES;
+			break;
+		}
+
 		TarantulaControlDevice = TNControlDevice::CreateTNControlDevice(DriverObject, &TNativeDeviceName);
 		if (nullptr == TarantulaControlDevice) {
-			status = STATUS_NO_MEMORY;
+			status = STATUS_INSUFFICIENT_RESOURCES;
 			break;
 		}
 

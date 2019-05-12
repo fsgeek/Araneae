@@ -1,5 +1,6 @@
 #pragma once
 #include <ntifs.h>
+#include "tnative-resource.h"
 
 union MemoryTag {
 	UCHAR tag[4];
@@ -30,7 +31,7 @@ class TNRegistry
 	~TNRegistry() noexcept {};
 public:
 	static _Must_inspect_result_ TNRegistry* CreateTNRegistry(_In_opt_ PCUNICODE_STRING RegistryPath) noexcept;
-	static _Must_inspect_result_ TNRegistry* CreateTNRegistry(_In_ TNRegistry &Registry, _In_ PCUNICODE_STRING RegistryPath) noexcept;
+	static _Must_inspect_result_ TNRegistry* CreateTNRegistry(_In_ TNRegistry *Registry, _In_ PCUNICODE_STRING RegistryPath) noexcept;
 	static void DeleteTNRegistry(_In_ _Post_ptr_invalid_ TNRegistry* Registry) noexcept;
 	// we don't implement these, so we delete the default implementations.
 	TNRegistry(const TNRegistry&) = delete;

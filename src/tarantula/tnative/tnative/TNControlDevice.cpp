@@ -106,7 +106,7 @@ TNControlDevice* TNControlDevice::CreateTNControlDevice(PDRIVER_OBJECT DriverObj
 	while (NT_SUCCESS(status)) {
 
 		if ((nullptr == deviceObject) || (nullptr == deviceObject->DeviceExtension)) {
-			status = STATUS_NO_MEMORY;
+			status = STATUS_INSUFFICIENT_RESOURCES;
 			break;
 		}
 

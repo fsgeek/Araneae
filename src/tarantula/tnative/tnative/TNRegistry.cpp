@@ -96,12 +96,12 @@ TNRegistry* TNRegistry::CreateTNRegistry(PCUNICODE_STRING RegistryPath) noexcept
 #pragma warning(disable:6014)
 #pragma warning(disable:26400 26447 26409) // we're in the kernel, this is how we allocate memory
 _Use_decl_annotations_
-TNRegistry* TNRegistry::CreateTNRegistry(TNRegistry& Registry, PCUNICODE_STRING RegistryPath) noexcept
+TNRegistry* TNRegistry::CreateTNRegistry(TNRegistry *Registry, PCUNICODE_STRING RegistryPath) noexcept
 {
 	TNRegistry* registry = nullptr;
 	NTSTATUS status = STATUS_UNSUCCESSFUL;
 
-	while (nullptr != RegistryPath) {
+	while ((nullptr != Registry) && (nullptr != RegistryPath)) {
 		registry = new TNRegistry;
 
 		if (nullptr == registry) {
@@ -127,7 +127,7 @@ TNRegistry* TNRegistry::CreateTNRegistry(TNRegistry& Registry, PCUNICODE_STRING 
 		}
 
 		// open registry relative to handle 
-		registry->m_RegistryHandle = OpenRegistry(Registry.GetRegistryHandle(), &registry->m_RegistryPath);
+		registry->m_RegistryHandle = OpenRegistry(Registry->GetRegistryHandle(), &registry->m_RegistryPath);
 
 		if (nullptr == registry->m_RegistryHandle) {
 			DeleteTNRegistry(registry);
