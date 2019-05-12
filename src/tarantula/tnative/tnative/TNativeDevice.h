@@ -54,7 +54,7 @@ public:
 	virtual NTSTATUS SetQuota(_In_ PIRP Irp) { return InvalidDeviceRequest(Irp); }
 	virtual NTSTATUS PnP(_In_ PIRP Irp) { return InvalidDeviceRequest(Irp); }
 	virtual NTSTATUS CompleteRequest(_In_ _Post_invalid_ PIRP Irp, NTSTATUS Status);
-	virtual ~TNativeDevice();
+	virtual ~TNativeDevice() { /* object lives inside the device extension */};
 
 	PDEVICE_OBJECT GetDeviceObject(void) noexcept { return m_DeviceObject; }
 

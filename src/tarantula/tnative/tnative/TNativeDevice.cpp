@@ -84,16 +84,8 @@ TNativeDevice* TNativeDevice::CreateTNativeDevice(_In_ PDRIVER_OBJECT DriverObje
 }
 #pragma warning(pop)
 
-#pragma warning(push)
-#pragma disable(26432) // if you define any default operation you must define them all
-TNativeDevice::~TNativeDevice() noexcept
-{
-	// TODO: need to delete the device object
-	IoDeleteDevice(m_DeviceObject);
-}
-
 void TNativeDevice::DeleteTNativeDevice(_In_ _Post_invalid_ TNativeDevice* NativeDevice) noexcept
 {
-	delete NativeDevice;
+	// Note: this also deletes the OBJECT
+	IoDeleteDevice(NativeDevice->m_DeviceObject);
 }
-#pragma warning(pop)
