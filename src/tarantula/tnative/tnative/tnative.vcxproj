@@ -218,6 +218,7 @@
     <ClInclude Include="include\wil\wistd_memory.h" />
     <ClInclude Include="include\wil\wistd_type_traits.h" />
     <ClInclude Include="include\wil\wrl.h" />
+    <ClInclude Include="memtag.h" />
     <ClInclude Include="tnative-resource.h" />
     <ClInclude Include="TNativeDevice.h" />
     <ClInclude Include="TNativeFileContext.h" />

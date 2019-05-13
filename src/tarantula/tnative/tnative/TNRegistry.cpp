@@ -54,10 +54,89 @@ static HANDLE OpenRegistry(_In_opt_ HANDLE RegistryHandle, _In_ PUNICODE_STRING 
 }
 
 _Use_decl_annotations_
-NTSTATUS TNRegistry::LoadRegistryValues()
+NTSTATUS TNRegistry::AddValue(const KEY_VALUE_FULL_INFORMATION &NewValue) noexcept
+{
+	NTSTATUS status = STATUS_UNSUCCESSFUL;
+	size_t size = 0;
+	ValueEntry* ve = nullptr;
+	ULONG_PTR ptr = 0;
+
+	while (!NT_SUCCESS(status)) {
+
+		// allocate enough space
+		size = static_cast<size_t>(FIELD_OFFSET(ValueEntry, ValueInfo)) + FIELD_OFFSET(KEY_VALUE_FULL_INFORMATION, Name) + NewValue.DataOffset + NewValue.DataLength;
+		ve = static_cast<ValueEntry*>(ExAllocatePoolWithTag(PagedPool, size, Tarantula::TNRegistryValueEntryTag.tagvalue));
+		if (nullptr == ve) {
+			status = STATUS_INSUFFICIENT_RESOURCES;
+			break;
+		}
+
+		// set up the new entry
+		ptr = (reinterpret_cast<ULONG_PTR>(ve)) + FIELD_OFFSET(ValueEntry, ValueInfo);
+		RtlCopyMemory(reinterpret_cast<void *>(ptr), &NewValue, size - FIELD_OFFSET(ValueEntry, ValueInfo));
+		RtlInitUnicodeString(&ve->Name, ve->ValueInfo.Name);
+
+		// Add it to the list
+		InsertTailList(&m_ValueList, &ve->ListEntry);
+	}
+	
+	return status;
+}
+
+_Use_decl_annotations_
+NTSTATUS TNRegistry::AddKey(const KEY_BASIC_INFORMATION & NewKey) noexcept
+{
+	NTSTATUS status = STATUS_UNSUCCESSFUL;
+	size_t size = 0;
+	ValueEntry* ke = nullptr;
+	ULONG_PTR ptr = 0;
+
+	while (!NT_SUCCESS(status)) {
+
+		// allocate enough space
+		size = (static_cast<size_t>(FIELD_OFFSET(ValueEntry, KeyInfo))) + FIELD_OFFSET(KEY_BASIC_INFORMATION, Name) + NewKey.NameLength;
+		ke = static_cast<ValueEntry*>(ExAllocatePoolWithTag(PagedPool, size, Tarantula::TNRegistryKeyEntryTag.tagvalue));
+		if (nullptr == ke) {
+			status = STATUS_INSUFFICIENT_RESOURCES;
+			break;
+		}
+
+		// set up the new entry
+		ptr = reinterpret_cast<ULONG_PTR>(ke) + FIELD_OFFSET(ValueEntry, KeyInfo);
+		RtlCopyMemory(reinterpret_cast<void*>(ptr), &NewKey, size - FIELD_OFFSET(ValueEntry, KeyInfo));
+		RtlInitUnicodeString(&ke->Name, ke->KeyInfo.Name);
+
+		// Add it to the list
+		InsertTailList(&m_KeyList, &ke->ListEntry);
+	}
+
+	return status;
+}
+
+void TNRegistry::FreeValueList(void) noexcept
+{
+	ValueEntry* ve = nullptr;
+	LIST_ENTRY* le = nullptr;
+
+	while (!IsListEmpty(&m_ValueList)) {
+		le = RemoveHeadList(&m_ValueList);
+		ve = CONTAINING_RECORD(le, ValueEntry, ListEntry);
+		ExFreePoolWithTag(ve, Tarantula::TNRegistryValueEntryTag.tagvalue);
+	}
+}
+
+void TNRegistry::FreeKeyList(void) noexcept
+{
+	return;
+}
+
+_Use_decl_annotations_
+NTSTATUS TNRegistry::LoadRegistryValues() noexcept
 {
 	return NTSTATUS();
 }
+
+_Use_decl_annotations_
 TNRegistry* TNRegistry::CreateTNRegistry(PCUNICODE_STRING RegistryPath) noexcept
 {
 #pragma warning(suppress:6014 26400 26409) // in kernel, this is how we allocate memory.
@@ -75,7 +154,7 @@ TNRegistry* TNRegistry::CreateTNRegistry(PCUNICODE_STRING RegistryPath) noexcept
 			break;
 		}
 		// save the path
-		status = CopyRegistryPath(RegistryPath, &registry->m_RegistryPath, DefaultStringTag.tagvalue);
+		status = CopyRegistryPath(RegistryPath, &registry->m_RegistryPath, Tarantula::TNRegistryStringTag.tagvalue);
 		if (!NT_SUCCESS(status)) {
 			delete registry;
 			registry = nullptr;
@@ -124,7 +203,7 @@ TNRegistry* TNRegistry::CreateTNRegistry(TNRegistry *Registry, PCUNICODE_STRING 
 		}
 
 		// save the path
-		status = CopyRegistryPath(RegistryPath, &registry->m_RegistryPath, DefaultStringTag.tagvalue);
+		status = CopyRegistryPath(RegistryPath, &registry->m_RegistryPath, Tarantula::TNRegistryStringTag.tagvalue);
 		if (!NT_SUCCESS(status)) {
 			delete registry;
 			registry = nullptr;
@@ -152,7 +231,7 @@ void TNRegistry::DeleteTNRegistry(TNRegistry* Registry) noexcept
 {
 	while (nullptr != Registry) {
 		if (nullptr != Registry->m_RegistryPath.Buffer) {
-			ExFreePoolWithTag(Registry->m_RegistryPath.Buffer, DefaultStringTag.tagvalue);
+			ExFreePoolWithTag(Registry->m_RegistryPath.Buffer, Tarantula::TNRegistryStringTag.tagvalue);
 			Registry->m_RegistryPath.Buffer = nullptr;
 		}
 
@@ -206,7 +285,3 @@ NTSTATUS TNRegistry::ReadStringValue(UNICODE_STRING& Value)
 	return status
 }
 #endif // 0
-
-
-const MemoryTag TNRegistry::DefaultMemoryTag = { 'e','r','N','T' };
-const MemoryTag TNRegistry::DefaultStringTag = { 's', 'r', 'N', 'T' };

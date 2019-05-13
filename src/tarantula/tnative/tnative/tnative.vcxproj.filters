@@ -134,5 +134,8 @@
     <ClInclude Include="TNRegistry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="memtag.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
