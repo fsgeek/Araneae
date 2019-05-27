@@ -72,8 +72,10 @@ NTSTATUS TNRegistry::AddValue(const KEY_VALUE_FULL_INFORMATION &NewValue) noexce
 		}
 
 		// set up the new entry
+#pragma warning(suppress:26490) // it's this or a C-cast
 		ptr = (reinterpret_cast<ULONG_PTR>(ve)) + FIELD_OFFSET(ValueEntry, ValueInfo);
 		RtlCopyMemory(reinterpret_cast<void *>(ptr), &NewValue, size - FIELD_OFFSET(ValueEntry, ValueInfo));
+#pragma warning(suppress:26485) // I know there's no array bounds here
 		RtlInitUnicodeString(&ve->Name, ve->ValueInfo.Name);
 
 		// Add it to the list
@@ -102,8 +104,10 @@ NTSTATUS TNRegistry::AddKey(const KEY_BASIC_INFORMATION & NewKey) noexcept
 		}
 
 		// set up the new entry
+#pragma warning(suppress:26490) // it's this or a C-cast
 		ptr = reinterpret_cast<ULONG_PTR>(ke) + FIELD_OFFSET(ValueEntry, KeyInfo);
 		RtlCopyMemory(reinterpret_cast<void*>(ptr), &NewKey, size - FIELD_OFFSET(ValueEntry, KeyInfo));
+#pragma warning(suppress:26485) // yes it is an unbound array
 		RtlInitUnicodeString(&ke->Name, ke->KeyInfo.Name);
 
 		// Add it to the list
@@ -120,6 +124,7 @@ void TNRegistry::FreeValueList(void) noexcept
 
 	while (!IsListEmpty(&m_ValueList)) {
 		le = RemoveHeadList(&m_ValueList);
+#pragma warning(suppress:26481) // I can't use span
 		ve = CONTAINING_RECORD(le, ValueEntry, ListEntry);
 		ExFreePoolWithTag(ve, Tarantula::TNRegistryValueEntryTag.tagvalue);
 	}
@@ -246,8 +251,9 @@ void TNRegistry::DeleteTNRegistry(TNRegistry* Registry) noexcept
 }
 
 _Use_decl_annotations_
-NTSTATUS TNRegistry::ReadDwordValue(PUNICODE_STRING ValueName, ULONG& Value)
+NTSTATUS TNRegistry::ReadDwordValue(PCUNICODE_STRING ValueName, ULONG& Value)
 {
+#pragma warning(suppress:26496) // we'll use it more...
 	NTSTATUS status = STATUS_UNSUCCESSFUL;
 	UNREFERENCED_PARAMETER(ValueName);
 	Value = 0;

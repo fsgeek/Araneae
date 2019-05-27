@@ -192,6 +192,7 @@
     <ClCompile Include="TNativeDevice.cpp" />
     <ClCompile Include="TNativeFileContext.cpp" />
     <ClCompile Include="TNativeFileObject.cpp" />
+    <ClCompile Include="TNativeLinkObject.cpp" />
     <ClCompile Include="TNativeLock.cpp" />
     <ClCompile Include="TNControlDevice.cpp" />
     <ClCompile Include="TNRegistry.cpp" />
@@ -223,6 +224,7 @@
     <ClInclude Include="TNativeDevice.h" />
     <ClInclude Include="TNativeFileContext.h" />
     <ClInclude Include="TNativeFileObject.h" />
+    <ClInclude Include="TNativeLinkObject.h" />
     <ClInclude Include="TNativeLock.h" />
     <ClInclude Include="TNControlDevice.h" />
     <ClInclude Include="TNRegistry.h" />

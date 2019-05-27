@@ -63,7 +63,7 @@ public:
 	static _Must_inspect_result_ TNRegistry* CreateTNRegistry(_In_opt_ PCUNICODE_STRING RegistryPath) noexcept;
 	static _Must_inspect_result_ TNRegistry* CreateTNRegistry(_In_ TNRegistry *Registry, _In_ PCUNICODE_STRING RegistryPath) noexcept;
 	static void DeleteTNRegistry(_In_ _Post_ptr_invalid_ TNRegistry* Registry) noexcept;
-	_Must_inspect_result_ NTSTATUS ReadDwordValue(_In_ PUNICODE_STRING ValueName, _Out_ ULONG& Value);
+	_Must_inspect_result_ NTSTATUS ReadDwordValue(_In_ PCUNICODE_STRING ValueName, _Out_ ULONG& Value);
 
 };
 

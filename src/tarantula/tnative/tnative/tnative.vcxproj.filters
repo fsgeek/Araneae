@@ -48,6 +48,9 @@
     <ClCompile Include="TNativeLock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TNativeLinkObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cpprt.h">
@@ -135,6 +138,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="memtag.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TNativeLinkObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
