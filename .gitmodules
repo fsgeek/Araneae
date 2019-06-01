@@ -1,3 +1,9 @@
 [submodule "src/tarantula/winfsp"]
 	path = src/tarantula/winfsp
 	url = https://github.com/billziss-gh/winfsp.git
+[submodule "src/tarantula/finesse"]
+	path = src/tarantula/finesse
+	url = https://github.com/fsgeek/finesse
+[submodule "src/tarantula/libfuse"]
+	path = src/tarantula/libfuse
+	url = https://github.com/libfuse/libfuse
