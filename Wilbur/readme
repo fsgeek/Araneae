@@ -1,6 +1,6 @@
 The Folder contains the following subdirectories/files:
 
--------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------
 Basics
 
 The first week was mostly about getting acquainted with tools/methods (like shell scripting, MySQL) that could be useful for the project. I extracted file and directory attributes (like time, size, hash, suffix), created relationships between files like is-equivalent (have same hash) and contains, and stored this in a MySQL database. 
@@ -49,14 +49,14 @@ TimeDirectorySummarize.sh
 	'make_unique' would choode one of time or location hierarchy to expand each node based on how many children each dimension has - the lesser the better
 	'make clean' would remove intermediary directories 'time' and 'location'
 	'make_cleaner' would combine folders with single child to that child
--------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------
 File-Size Graphs
 
 sizehistogram.py
 	Create a histogram of file sizes
 
 and some graphs for file-size analysis
--------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------
 Time Directory
 
 All the files were sorted based on modification time. Clusters of 50 (or any other number) files were formed using this sorted list – files 1-50, 51-100 and so on. The modification time range of each of these groups of 50 files was found and folders were created with symlinks to these files. Time hierarchy was created above this. So the location of a file would be something like 2018/May/May_21_2018-May_30_2018/File1, where the folder  May_21_2018-May_30_2018 would contain 50 files. Similar to a) location hierarchy was also embedded into this. Example of a file path – 2018/May/May_21_2018-May_30_2018/Documents/Folder1/File1. There were also symlinks between folders of adjacent time ranges – for easy navigation. One point here was that the time range of files in a folder can be a measure of density, the longer the time range the lesser active the user was and vice versa. The shell implementation was very slow and I shifted to Python for all the later tasks. 
@@ -92,13 +92,13 @@ time_root_deeper_time
 
 time_root_deeper
 	Created by 'TimeDirectoryDeeper.py'
--------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------
 Type Directory
 
 File type analysis: Using shell commands one can find the file type and default application of a given file. The directory view was filtered based on the file type and symlinks were provided to be able to see the entire directory when needed. Example of a path : text/c++/Desktop/Folder1/File1.cpp. This may also be useful. Mobile phones usually just separate files based on their types and have no hierarchy structure. On a related note, files in the downloads and thrash folder are not stored hierarchically and it gets very difficult to find a file. Tools may be created to make this easy. 
 
 'TypeDirectoryDeeper.py' creates the directory 'type_root'
--------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------
 Similarity Clustering
 
 K-means clustering was tried to group the files based on last modification times. This looked useful and the true breaks were captured. For example, all my visa documents got clustered together, so did the papers I downloaded and most of my assignments formed separate clusters each. Also noticeable was that similarly named files were in the same cluster as files created for the same purpose at the same time usually have similar names.   
@@ -134,7 +134,7 @@ time_clustering (folder)
 
 ProgramOutput (folder)
 	Contains some outputs of similarity clustering programs
--------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------
 RelationshipDirectory
 
 RelationshipDirectory.py
@@ -154,7 +154,7 @@ NameSimilaityDirectory.py
 
 TimeSimilarityDirectory.py
 	Same as 'ContenSimilarityDirectory.py' - just files with similar last modification timestamps.
--------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------
 RelationshipVisualization
 
 ContainsRelationship.sh 
@@ -193,7 +193,7 @@ GraphVisualization2.py
 
 Demos (Folder)
 	Contains some files used by 'GraphVisualization2.py'
--------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------
 Test - RelationshipVisualization
 
 GraphVisualization.py
@@ -205,7 +205,7 @@ graphdata1, graphdata2 and graphdata3
 
 graph.html
 	output from 'GraphVisualization.py'
--------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------
 Relationship Visualization-Drive
 	
 DriveAndSystemRelations.py
@@ -229,14 +229,14 @@ credentials.json
 
 token.pickle
 	needed by 'DriveAndSystemRelations.py'
--------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------
 CleanTimeDirectory.sh
 	Shell script to remove directories with single child by merging them with that child
 	Pass the path to the directory that needs to be scanned for such sub-directories as an argument to 'scan'
--------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------
 PhotoSimilarityHash.py
 	Test program for image similarity
--------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------
 
 
 
