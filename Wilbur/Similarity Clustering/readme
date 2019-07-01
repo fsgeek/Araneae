@@ -1,0 +1,35 @@
+Similarity Clustering
+
+K-means clustering was tried to group the files based on last modification times. This looked useful and the true breaks were captured. For example, all my visa documents got clustered together, so did the papers I downloaded and most of my assignments formed separate clusters each. Also noticeable was that similarly named files were in the same cluster as files created for the same purpose at the same time usually have similar names.   
+
+Filename and location analysis: There are different metrics available to compare string similarity that can be used to find files with similar names and/or directory path. After trying different metrics, Jaro similarity seemed most useful. Something like Assignment2_new/foo.cpp and Assignment2/foo.cpp are closely related due to two reasons – the folder containing them denote different versions of the same assignment and the files have the same name. The two features (path and file name) can be assigned different weights.  
+
+Clustering based on Content was based on various kinds of methods like - hashtables, NLP, String Similarity etc. String Comparison (levenshtein similarity): Similarity is an unbounded number. Lakes a lot of time (didn’t happen even overnight). NLP: Works quite well, is fast too. Downside – designed to work on human language vocab. Filecmp (uses os.stat): Only returns files that have the same content. Fast. Similarity Sensitive Hashtable - fast and very useful, also works on program files.
+
+Use the variable 'path' to specify the directory that needs to be scanned in all of these programs
+
+ContentSimilarityHash.py
+	Prints out text files that have similar content by putting them in similarity sensitive hash tables
+
+ContentSimilarityNLP.py
+	Prints out text files that have similar content by using sklearn NLP library
+
+ContentSimilarityString.py
+	Prints out text files that have similar content by using Levenshtein string similarity metric
+
+ContentSimilaritySys.py
+	Prints out text files that have same content by using filecmp library - it compares file metadeta and hashes
+
+NameClustering.py
+	Prints out files that have similar names and location path using Jaro string similarity and Levenshtein string similarity
+	Uses sklearn clustering library
+
+TimeClustering.py
+	Clusters files that have similar last modofication times based on k-means clustering algorithm
+	Creates a directory 'time_clustering' to show the cluster of files formed
+
+time_clustering (folder)
+	Created by 'TimeClustering.py'
+
+ProgramOutput (folder)
+	Contains some outputs of similarity clustering programs

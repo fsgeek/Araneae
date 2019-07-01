@@ -1,0 +1,38 @@
+RelationshipVisualization
+
+ContainsRelationship.sh 
+	Shell script to scan a directory and print out all 'contains' relationship in a file named 'graphdata5' in a specific format as needed by 'GraphVisualization2.py'
+	Pass the directory address as an argument to the function 'scan'
+	Run this before Graph1.py, Graph2.py, Graph3.py and Graph4.py
+
+FileTime.py
+	Used by 'ContainsRelationship.sh' to compute folder modification times as the time when the last file mofification happened among the files that it contains
+
+Graph1.py
+	Prints out files that have similar names in a format as required by GraphVisualization2.py
+	Print the result into 'graphdata5' from the command line
+	Variable 'path' specifies the directory that is to be scanned
+	
+
+Graph2.py
+	Prints out files that have similar modification times in a format as required by GraphVisualization2.py
+	Print the result into 'graphdata5' from the command line
+	Variable 'path' specifies the directory that is to be scanned
+	Uses k-means clustering
+
+Graph3.py
+	Prints out files that have similar content in a format as required by GraphVisualization2.py
+	Print the result into 'graphdata5' from the command line
+	Variable 'path' specifies the directory that is to be scanned
+
+Graph4.py
+	Prints out files that have same hashes in a format as required by GraphVisualization2.py
+	Print the result into 'graphdata5' from the command line
+	Variable 'path' specifies the directory that is to be scanned
+
+GraphVisualization2.py
+	Visualizing File Relationships using python librarires from data in 'graphdata5'
+	For more see 'Demo.mp4' video
+
+Demos (Folder)
+	Contains some files used by 'GraphVisualization2.py'
