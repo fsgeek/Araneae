@@ -1,0 +1,48 @@
+Basics
+
+The first week was mostly about getting acquainted with tools/methods (like shell scripting, MySQL) that could be useful for the project. I extracted file and directory attributes (like time, size, hash, suffix), created relationships between files like is-equivalent (have same hash) and contains, and stored this in a MySQL database. 
+
+2nd week - 
+
+Time Directory was created with the structure Year-> Month -> Day. Since this was implemented on the same hierarchical directory structure that we want to overcome, it carries its problems, there is only one way to reach a file – one should know the exact date they were working on the file. There is no flexibility. I also embedded the location directory structure into the time directory so that all the files don't show up as a list and the location information is not lost, this also solved the problem of files having the same name. An example of a file path would be 2018/May/26/Desktop/Folder1/File1, where the folder 2018/May/26 only has files that were last modified on that day. 
+
+Tree was formed using time and location hierarchy of a given directory. Firstly, at each node one could either expand the view based on location or time hierarchy – so, if you are browsing through your Desktop you can either view all the files(or subdirectories)  in the Desktop or view the files (or subdirectories) arranged in a temporal hierarchy. So, the child node could be  Desktop/Folder1, Desktop/year-2017, etc. Similarly, these lower nodes can be further expanded based on time or location hierarchy. So, Desktop/year -2019/Folder1/month-Jan/File1,  Desktop/Folder1/year -2019/File1, and Desktop/Folder1/File1 all lead to the same file. This can be useful as the user can use multiple paths to reach a file. Since the tree can get very wide and deep, tree summarization was tried. This was in a way based on Laks's paper on summarizing hierarchical multidimensional data. Nodes were merged to include at least 20 (or some other number) files. Also, based on which expansion (time or location) at each node would have lesser children (possibly less clumsy) ,one expansion was chosen at each node. The tree was then flattened i.e nodes with a single child were merged with it. It was not very clear if the tree summarization provided any help in finding files.
+
+This folder contains the following shell scripts and c++ programs
+
+ContainsRelationship.sh 
+	Shell script to scan a directory and print out all 'contains' relationship in a file named 'ContainsRelationship (file/folder contained is printed below the folder it is contained in)'
+	Pass the directory address as an argument to the function 'scan'
+
+ObjectAttributesScan.sh
+	Scans a directory and prints out file and folder attributes (name, hash, time, extension, inode) into a file 'ObjectAttributes'
+	Pass the directory address as an argument to the function 'scan'
+
+HashScan.cpp
+	Reads the file 'Hashes' which contains the hash values of files in a directory
+	Finds out files that have the same hash and writes them one below the other in the file 'HashRelationship'
+
+HashScan.sh
+	Scans a directory and prints out file hashes (md5sum) into a file 'Hashes'
+	Pass the directory address as an argument to the function 'scan'
+
+TimeDirectory.sh
+	Scans a directory and creates a time directory structure of the form 'time/modification_year/modification_month/file' with symlinks to files 
+	Pass the directory address as an argument to the function 'scan'
+
+TimeDirectory2.sh
+	File for some test purpose
+
+TimeDirectory3.sh
+	Scans a directory and and creates a two dimensional (location and time) directory structure  with symlinks to files
+	Eg of paths would be - 'root2/year-2019/Desktop/Folder1/month-04/SubFolder1/day-22/File' , 'root2/year-2019/Desktop/Folder1/month-04/SubFolder1/day-22/File'
+	Pass the directory address as an argument to the function 'scan'
+	The Directory structure created will be worked upon by 'TimeDirectorySummarize.sh' to create a tree summarization of 2-D location and time hierarchy.
+
+TimeDirectorySummarize.sh
+	Acts on the Directory structure created by 'TimeDirectory3.sh'. Both of these together form the tree summarization of 2-D location and time hierarchy.
+	The function 'summarize' would try to find nodes in the tree hierarchy with more than 'merge_threshhold' files and call the function 'merge'
+	'merge' would create a node containing all the files in its children
+	'make_unique' would choode one of time or location hierarchy to expand each node based on how many children each dimension has - the lesser the better
+	'make clean' would remove intermediary directories 'time' and 'location'
+	'make_cleaner' would combine folders with single child to that child
