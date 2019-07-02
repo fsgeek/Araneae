@@ -1,5 +1,0 @@
-Type Directory
-
-File type analysis: Using shell commands one can find the file type and default application of a given file. The directory view was filtered based on the file type and symlinks were provided to be able to see the entire directory when needed. Example of a path : text/c++/Desktop/Folder1/File1.cpp. This may also be useful. Mobile phones usually just separate files based on their types and have no hierarchy structure. On a related note, files in the downloads and thrash folder are not stored hierarchically and it gets very difficult to find a file. Tools may be created to make this easy. 
-
-'TypeDirectoryDeeper.py' creates the directory 'type_root'

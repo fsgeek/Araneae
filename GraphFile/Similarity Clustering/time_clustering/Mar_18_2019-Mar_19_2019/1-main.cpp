@@ -1,1 +1,0 @@
-/home/ashish/Desktop/COP/Task2/Traffic-road-simulator/Traffic road sim/2017CS50521_2017CS10389/main.cpp

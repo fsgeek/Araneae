@@ -1,1 +1,0 @@
-/home/ashish/Desktop/find_similarities_between_images.py
