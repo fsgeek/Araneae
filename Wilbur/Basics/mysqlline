@@ -1,0 +1,5 @@
+sql command to put data froma text file to sql database
+mysql> load data local infile 'Desktop/GraphFile/ContainsRelationship' into table ContainsRelationship fields terminated by '\n' lines terminated by '\n';
+
+
+
