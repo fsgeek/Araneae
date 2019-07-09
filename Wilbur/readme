@@ -206,9 +206,9 @@ graphdata1, graphdata2 and graphdata3
 graph.html
 	output from 'GraphVisualization.py'
 -----------------------------------------------------------------------------------------------------------------------------
-Relationship Visualization-Drive
+Relationship Visualization-Drive and Gmail
 	
-DriveAndSystemRelations.py
+Drive,GmailAndSystemRelations.py
 	Finds files with similar modification time, names, and content.
 	Scans local system directory specified by the variable 'path' and Google Drive files.
 	Output needs to be printed to 'graphdata5', so that 'GraphVisualization2.py' can use it.
@@ -216,7 +216,7 @@ DriveAndSystemRelations.py
 ContainsRelationship.sh 
 	Shell script to scan a directory and print out all 'contains' relationship in a file named 'graphdata5' in a specific format as needed by 'GraphVisualization2.py'
 	Pass the directory address as an argument to the function 'scan'
-	Run this after DriveAndSystemRelations.py 
+	Run this after Drive,GmailAndSystemRelations.py 
 
 FileTime.py
 	Used by 'ContainsRelationship.sh' to compute folder modification times as the time when the last file mofification happened among the files that it contains
@@ -225,10 +225,23 @@ Demos (Folder)
 	Contains some files used by 'GraphVisualization2.py'
 
 credentials.json
-	needed by 'DriveAndSystemRelations.py'
+	needed by 'Drive,GmailAndSystemRelations.py'
 
 token.pickle
-	needed by 'DriveAndSystemRelations.py'
+	needed by 'Drive,GmailAndSystemRelations.py'
+
+accesslog
+	stores the file access audit log
+	use 'ausearch -k fstrack | aureport -f -i' in the command prompt to generate the log after activating the auditd log daemon with the required monitoring rule and keyword 'fstrack'
+
+MostFrequentAccesses.py
+	finds files/folders that are accessed most frequently based on data in the file 'accesslog'	
+
+email_metadata.py
+	scans gmail mail box and stores metadata in the file 'email_metadata'
+
+email_metadata
+	contains gmail metadata
 -----------------------------------------------------------------------------------------------------------------------------
 CleanTimeDirectory.sh
 	Shell script to remove directories with single child by merging them with that child
