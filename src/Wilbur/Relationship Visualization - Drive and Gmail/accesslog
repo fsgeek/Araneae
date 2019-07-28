@@ -1,0 +1,145 @@
+
+File Report
+===============================================
+# date time file syscall success exe auid event
+===============================================
+1. Tuesday 02 July 2019 02:53:47 /home/ashish/Desktop openat yes /usr/bin/nautilus-desktop ashish 157
+2. Tuesday 02 July 2019 02:53:47 /home/ashish/Desktop/.htaccess openat yes /usr/bin/nautilus-desktop ashish 158
+3. Tuesday 02 July 2019 02:53:47 /home/ashish/Desktop/SDS openat yes /usr/bin/nautilus-desktop ashish 159
+4. Tuesday 02 July 2019 02:53:47 /home/ashish/Desktop/FileSystems openat yes /usr/bin/nautilus-desktop ashish 160
+5. Tuesday 02 July 2019 02:53:47 /home/ashish/Desktop/UBC openat yes /usr/bin/nautilus-desktop ashish 161
+6. Tuesday 02 July 2019 02:53:47 /home/ashish/Desktop/MACOSX openat yes /usr/bin/nautilus-desktop ashish 162
+7. Tuesday 02 July 2019 02:53:47 /home/ashish/Desktop/test openat yes /usr/bin/nautilus-desktop ashish 163
+8. Tuesday 02 July 2019 02:53:47 /home/ashish/Desktop/Project openat yes /usr/bin/nautilus-desktop ashish 164
+9. Tuesday 02 July 2019 02:53:48 /home/ashish/Desktop/Test openat yes /usr/bin/nautilus-desktop ashish 165
+10. Tuesday 02 July 2019 02:53:48 /home/ashish/Desktop/sem4 openat yes /usr/bin/nautilus-desktop ashish 166
+11. Tuesday 02 July 2019 02:53:48 /home/ashish/Desktop/COP openat yes /usr/bin/nautilus-desktop ashish 167
+12. Tuesday 02 July 2019 02:53:48 /home/ashish/Desktop/col226 openat yes /usr/bin/nautilus-desktop ashish 168
+13. Tuesday 02 July 2019 02:53:48 /home/ashish/Desktop/images openat yes /usr/bin/nautilus-desktop ashish 169
+14. Tuesday 02 July 2019 02:53:48 /home/ashish/Desktop/US Visa openat yes /usr/bin/nautilus-desktop ashish 170
+15. Tuesday 02 July 2019 02:53:52 /home/ashish/Desktop openat yes /usr/bin/nautilus ashish 171
+16. Tuesday 02 July 2019 02:58:56 /home/ashish/Desktop openat yes /usr/bin/gedit ashish 196
+17. Tuesday 02 July 2019 02:59:30 /home/ashish/Desktop openat yes /usr/bin/gedit ashish 199
+18. Tuesday 02 July 2019 03:00:08 /home/ashish/Desktop openat yes /usr/bin/gedit ashish 200
+19. Tuesday 02 July 2019 03:00:20 /home/ashish/Desktop openat yes /usr/bin/gedit ashish 201
+20. Tuesday 02 July 2019 04:48:28 /home/ashish/Desktop openat yes /usr/bin/gedit ashish 14010
+21. Tuesday 02 July 2019 04:53:02 /home/ashish/Desktop openat yes /usr/bin/gedit ashish 14044
+22. Tuesday 02 July 2019 05:02:59 /home/ashish/Desktop openat yes /usr/bin/gedit ashish 14253
+23. Tuesday 02 July 2019 05:08:46 /home/ashish/Desktop openat yes /usr/bin/nautilus ashish 15687
+24. Tuesday 02 July 2019 05:15:09 /home/ashish/Desktop openat yes /usr/bin/nautilus ashish 18891
+25. Tuesday 02 July 2019 05:15:15 /home/ashish/Desktop openat yes /usr/bin/nautilus ashish 18892
+26. Tuesday 02 July 2019 05:19:37 /home/ashish/Desktop openat yes /usr/bin/nautilus ashish 18932
+27. Tuesday 02 July 2019 05:19:40 /home/ashish/Desktop openat yes /usr/bin/nautilus ashish 18933
+28. Tuesday 02 July 2019 05:24:14 /home/ashish/Desktop openat yes /usr/bin/nautilus ashish 21984
+29. Tuesday 02 July 2019 06:38:44 /home/ashish/Desktop openat yes /usr/lib/firefox/firefox ashish 107697
+30. Tuesday 02 July 2019 06:38:44 /home/ashish/Desktop/.htaccess openat yes /usr/lib/firefox/firefox ashish 107698
+31. Tuesday 02 July 2019 06:38:44 /home/ashish/Desktop/.htaccess openat yes /usr/lib/firefox/firefox ashish 107699
+32. Tuesday 02 July 2019 06:38:44 /home/ashish/Desktop openat yes /usr/lib/firefox/firefox ashish 107696
+33. Tuesday 02 July 2019 06:44:45 /home/ashish/Desktop openat yes /usr/lib/firefox/firefox ashish 112689
+34. Tuesday 02 July 2019 06:44:45 /home/ashish/Desktop/.htaccess openat yes /usr/lib/firefox/firefox ashish 112690
+35. Tuesday 02 July 2019 06:44:45 /home/ashish/Desktop/.htaccess openat yes /usr/lib/firefox/firefox ashish 112691
+36. Tuesday 02 July 2019 06:44:45 /home/ashish/Desktop openat yes /usr/lib/firefox/firefox ashish 112688
+37. Tuesday 02 July 2019 06:49:33 /home/ashish/Desktop/Project/explorer.ps openat yes /usr/lib/firefox/firefox ashish 114432
+38. Tuesday 02 July 2019 06:49:33 /home/ashish/Desktop/Project openat yes /usr/lib/firefox/firefox ashish 114431
+39. Wednesday 03 July 2019 00:09:29 /home/ashish/Desktop/UBC openat yes /usr/bin/nautilus ashish 133597
+40. Wednesday 03 July 2019 00:09:32 /home/ashish/Desktop/UBC/Fairview2ndInstallment.png openat yes /usr/bin/eog ashish 133600
+41. Wednesday 03 July 2019 00:09:32 /home/ashish/Desktop/UBC openat yes /usr/bin/eog ashish 133599
+42. Wednesday 03 July 2019 00:09:38 /home/ashish/Desktop/UBC/UBCAccomodation2.pdf openat yes /usr/bin/evince ashish 133602
+43. Wednesday 03 July 2019 00:15:03 /home/ashish/Desktop openat yes /usr/bin/nautilus-desktop ashish 144
+44. Wednesday 03 July 2019 00:15:06 /home/ashish/Desktop/Test openat yes /usr/bin/nautilus-desktop ashish 152
+45. Wednesday 03 July 2019 00:15:04 /home/ashish/Desktop/.htaccess openat yes /usr/bin/nautilus-desktop ashish 145
+46. Wednesday 03 July 2019 00:15:04 /home/ashish/Desktop/SDS openat yes /usr/bin/nautilus-desktop ashish 146
+47. Wednesday 03 July 2019 00:15:04 /home/ashish/Desktop/FileSystems openat yes /usr/bin/nautilus-desktop ashish 147
+48. Wednesday 03 July 2019 00:15:04 /home/ashish/Desktop/UBC openat yes /usr/bin/nautilus-desktop ashish 148
+49. Wednesday 03 July 2019 00:15:05 /home/ashish/Desktop/MACOSX openat yes /usr/bin/nautilus-desktop ashish 149
+50. Wednesday 03 July 2019 00:15:05 /home/ashish/Desktop/test openat yes /usr/bin/nautilus-desktop ashish 150
+51. Wednesday 03 July 2019 00:15:06 /home/ashish/Desktop/Project openat yes /usr/bin/nautilus-desktop ashish 151
+52. Wednesday 03 July 2019 00:15:06 /home/ashish/Desktop/sem4 openat yes /usr/bin/nautilus-desktop ashish 153
+53. Wednesday 03 July 2019 00:15:06 /home/ashish/Desktop/COP openat yes /usr/bin/nautilus-desktop ashish 154
+54. Wednesday 03 July 2019 00:15:06 /home/ashish/Desktop/col226 openat yes /usr/bin/nautilus-desktop ashish 155
+55. Wednesday 03 July 2019 00:15:06 /home/ashish/Desktop/images openat yes /usr/bin/nautilus-desktop ashish 156
+56. Wednesday 03 July 2019 00:15:06 /home/ashish/Desktop/US Visa openat yes /usr/bin/nautilus-desktop ashish 157
+57. Wednesday 03 July 2019 00:15:54 /home/ashish/Desktop openat yes /usr/bin/nautilus ashish 741
+58. Wednesday 03 July 2019 00:18:20 /home/ashish/Desktop/.htaccess openat yes /usr/bin/nautilus ashish 2215
+59. Wednesday 03 July 2019 00:18:20 /home/ashish/Desktop/SDS openat yes /usr/bin/nautilus ashish 2216
+60. Wednesday 03 July 2019 00:18:20 /home/ashish/Desktop/FileSystems openat yes /usr/bin/nautilus ashish 2217
+61. Wednesday 03 July 2019 00:18:20 /home/ashish/Desktop openat yes /usr/bin/nautilus ashish 2214
+62. Wednesday 03 July 2019 00:18:20 /home/ashish/Desktop/UBC openat yes /usr/bin/nautilus ashish 2218
+63. Wednesday 03 July 2019 00:18:20 /home/ashish/Desktop/MACOSX openat yes /usr/bin/nautilus ashish 2219
+64. Wednesday 03 July 2019 00:18:20 /home/ashish/Desktop/test openat yes /usr/bin/nautilus ashish 2220
+65. Wednesday 03 July 2019 00:18:20 /home/ashish/Desktop/Project openat yes /usr/bin/nautilus ashish 2221
+66. Wednesday 03 July 2019 00:18:20 /home/ashish/Desktop/Test openat yes /usr/bin/nautilus ashish 2222
+67. Wednesday 03 July 2019 00:18:20 /home/ashish/Desktop/sem4 openat yes /usr/bin/nautilus ashish 2223
+68. Wednesday 03 July 2019 00:18:20 /home/ashish/Desktop/COP openat yes /usr/bin/nautilus ashish 2224
+69. Wednesday 03 July 2019 00:18:20 /home/ashish/Desktop/col226 openat yes /usr/bin/nautilus ashish 2225
+70. Wednesday 03 July 2019 00:18:20 /home/ashish/Desktop/images openat yes /usr/bin/nautilus ashish 2226
+71. Wednesday 03 July 2019 00:18:20 /home/ashish/Desktop/US Visa openat yes /usr/bin/nautilus ashish 2227
+72. Wednesday 03 July 2019 00:19:24 /home/ashish/Desktop/COP openat yes /usr/bin/nautilus ashish 2229
+73. Wednesday 03 July 2019 00:19:24 /home/ashish/Desktop/COP/Task 1.2 openat yes /usr/bin/nautilus ashish 2230
+74. Wednesday 03 July 2019 00:19:25 /home/ashish/Desktop/COP/Task2 openat yes /usr/bin/nautilus ashish 2232
+75. Wednesday 03 July 2019 00:19:25 /home/ashish/Desktop/COP/__MACOSX openat yes /usr/bin/nautilus ashish 2233
+76. Wednesday 03 July 2019 00:19:25 /home/ashish/Desktop/COP/Traffic road sim openat yes /usr/bin/nautilus ashish 2234
+77. Wednesday 03 July 2019 00:19:25 /home/ashish/Desktop/COP/junk openat yes /usr/bin/nautilus ashish 2235
+78. Wednesday 03 July 2019 00:19:25 /home/ashish/Desktop/COP/Task1.3 openat yes /usr/bin/nautilus ashish 2236
+79. Wednesday 03 July 2019 00:19:52 /home/ashish/Desktop/COP/Task 1.2/__MACOSX openat yes /usr/bin/nautilus ashish 2238
+80. Wednesday 03 July 2019 00:19:53 /home/ashish/Desktop/COP/Task 1.2/2017CS10389_2017CS505521_ass2 openat yes /usr/bin/nautilus ashish 2239
+81. Wednesday 03 July 2019 00:19:54 /home/ashish/Desktop/COP openat yes /usr/bin/nautilus ashish 2240
+82. Wednesday 03 July 2019 00:19:54 /home/ashish/Desktop/COP/Task2 openat yes /usr/bin/nautilus ashish 2241
+83. Wednesday 03 July 2019 00:19:54 /home/ashish/Desktop/COP/__MACOSX openat yes /usr/bin/nautilus ashish 2242
+84. Wednesday 03 July 2019 00:19:54 /home/ashish/Desktop/COP/Traffic road sim openat yes /usr/bin/nautilus ashish 2243
+85. Wednesday 03 July 2019 00:19:54 /home/ashish/Desktop/COP/junk openat yes /usr/bin/nautilus ashish 2244
+86. Wednesday 03 July 2019 00:19:52 /home/ashish/Desktop/COP/Task 1.2 openat yes /usr/bin/nautilus ashish 2237
+87. Wednesday 03 July 2019 00:19:54 /home/ashish/Desktop/COP/Task1.3 openat yes /usr/bin/nautilus ashish 2245
+88. Wednesday 03 July 2019 00:19:58 /home/ashish/Desktop/.htaccess openat yes /usr/bin/nautilus ashish 2247
+89. Wednesday 03 July 2019 00:19:58 /home/ashish/Desktop/SDS openat yes /usr/bin/nautilus ashish 2248
+90. Wednesday 03 July 2019 00:19:58 /home/ashish/Desktop/FileSystems openat yes /usr/bin/nautilus ashish 2249
+91. Wednesday 03 July 2019 00:19:58 /home/ashish/Desktop/UBC openat yes /usr/bin/nautilus ashish 2250
+92. Wednesday 03 July 2019 00:19:58 /home/ashish/Desktop/MACOSX openat yes /usr/bin/nautilus ashish 2251
+93. Wednesday 03 July 2019 00:19:58 /home/ashish/Desktop/test openat yes /usr/bin/nautilus ashish 2252
+94. Wednesday 03 July 2019 00:19:58 /home/ashish/Desktop/Project openat yes /usr/bin/nautilus ashish 2253
+95. Wednesday 03 July 2019 00:19:58 /home/ashish/Desktop/Test openat yes /usr/bin/nautilus ashish 2254
+96. Wednesday 03 July 2019 00:19:58 /home/ashish/Desktop/sem4 openat yes /usr/bin/nautilus ashish 2255
+97. Wednesday 03 July 2019 00:19:58 /home/ashish/Desktop openat yes /usr/bin/nautilus ashish 2246
+98. Wednesday 03 July 2019 00:19:58 /home/ashish/Desktop/col226 openat yes /usr/bin/nautilus ashish 2256
+99. Wednesday 03 July 2019 00:19:58 /home/ashish/Desktop/images openat yes /usr/bin/nautilus ashish 2257
+100. Wednesday 03 July 2019 00:19:58 /home/ashish/Desktop/US Visa openat yes /usr/bin/nautilus ashish 2258
+101. Wednesday 03 July 2019 00:28:29 /home/ashish/Desktop/col226 openat yes /usr/bin/nautilus ashish 3292
+102. Wednesday 03 July 2019 00:28:29 /home/ashish/Desktop/col226/A0 openat yes /usr/bin/nautilus ashish 3293
+103. Wednesday 03 July 2019 00:28:30 /home/ashish/Desktop/col226/week4 openat yes /usr/bin/nautilus ashish 3294
+104. Wednesday 03 July 2019 00:28:30 /home/ashish/Desktop/col226/A6 openat yes /usr/bin/nautilus ashish 3295
+105. Wednesday 03 July 2019 00:28:30 /home/ashish/Desktop/col226/A5 openat yes /usr/bin/nautilus ashish 3296
+106. Wednesday 03 July 2019 00:28:30 /home/ashish/Desktop/col226/A4 openat yes /usr/bin/nautilus ashish 3297
+107. Wednesday 03 July 2019 00:28:30 /home/ashish/Desktop/col226/A3 openat yes /usr/bin/nautilus ashish 3298
+108. Wednesday 03 July 2019 00:28:30 /home/ashish/Desktop/col226/A1 openat yes /usr/bin/nautilus ashish 3299
+109. Wednesday 03 July 2019 00:28:30 /home/ashish/Desktop/col226/A2 openat yes /usr/bin/nautilus ashish 3300
+110. Wednesday 03 July 2019 00:29:04 /home/ashish/Desktop/col226/A5 openat yes /usr/bin/nautilus ashish 3303
+111. Wednesday 03 July 2019 00:29:04 /home/ashish/Desktop/col226/A5/a2.mll openat yes /usr/bin/nautilus ashish 3304
+112. Wednesday 03 July 2019 00:29:05 /home/ashish/Desktop/col226/A5/a3.mly openat yes /usr/bin/nautilus ashish 3305
+113. Wednesday 03 July 2019 00:29:05 /home/ashish/Desktop/col226/A5/_build openat yes /usr/bin/nautilus ashish 3306
+114. Wednesday 03 July 2019 00:29:05 /home/ashish/Desktop/col226/A5/2017cs50521 openat yes /usr/bin/nautilus ashish 3307
+115. Wednesday 03 July 2019 00:29:08 /home/ashish/Desktop/col226/A5/a2.mll openat yes /usr/bin/nautilus ashish 3309
+116. Wednesday 03 July 2019 00:29:08 /home/ashish/Desktop/col226/A5/a2.mll openat yes /usr/bin/gedit ashish 3310
+117. Wednesday 03 July 2019 00:29:08 /home/ashish/Desktop/col226/A5/a2.mll openat yes /usr/bin/gedit ashish 3311
+118. Wednesday 03 July 2019 00:29:08 /home/ashish/Desktop/col226/A5/a2.mll openat yes /usr/bin/gedit ashish 3312
+119. Wednesday 03 July 2019 00:29:08 /home/ashish/Desktop/col226/A5/a2.mll openat yes /usr/bin/nautilus ashish 3308
+120. Wednesday 03 July 2019 00:29:18 /home/ashish/Desktop/col226/A5/a2.mll openat yes /usr/bin/gedit ashish 3314
+121. Wednesday 03 July 2019 00:29:18 /home/ashish/Desktop/col226/A5/.goutputstream-AHWW3Z openat yes /usr/bin/gedit ashish 3315
+122. Wednesday 03 July 2019 00:29:18 /home/ashish/Desktop/col226/A5/a2.mll openat yes /usr/bin/nautilus ashish 3316
+123. Wednesday 03 July 2019 00:29:18 /home/ashish/Desktop/col226/A5/a2.mll rename yes /usr/bin/gedit ashish 3317
+124. Wednesday 03 July 2019 00:29:18 /home/ashish/Desktop/col226/A5/a2.mll openat no /usr/bin/gedit ashish 3313
+125. Wednesday 03 July 2019 00:29:19 /home/ashish/Desktop/col226/A5/a2.mll openat yes /usr/bin/gedit ashish 3318
+126. Wednesday 03 July 2019 00:43:48 /home/ashish/Desktop/UBC openat yes /usr/bin/nautilus ashish 5360
+127. Wednesday 03 July 2019 00:46:20 /home/ashish/Desktop/.htaccess openat yes /usr/bin/nautilus ashish 6579
+128. Wednesday 03 July 2019 00:46:20 /home/ashish/Desktop/SDS openat yes /usr/bin/nautilus ashish 6580
+129. Wednesday 03 July 2019 00:46:20 /home/ashish/Desktop/FileSystems openat yes /usr/bin/nautilus ashish 6581
+130. Wednesday 03 July 2019 00:46:20 /home/ashish/Desktop/MACOSX openat yes /usr/bin/nautilus ashish 6582
+131. Wednesday 03 July 2019 00:46:20 /home/ashish/Desktop openat yes /usr/bin/nautilus ashish 6578
+132. Wednesday 03 July 2019 00:46:20 /home/ashish/Desktop/test openat yes /usr/bin/nautilus ashish 6583
+133. Wednesday 03 July 2019 00:46:20 /home/ashish/Desktop/Project openat yes /usr/bin/nautilus ashish 6584
+134. Wednesday 03 July 2019 00:46:20 /home/ashish/Desktop/Test openat yes /usr/bin/nautilus ashish 6585
+135. Wednesday 03 July 2019 00:46:20 /home/ashish/Desktop/sem4 openat yes /usr/bin/nautilus ashish 6586
+136. Wednesday 03 July 2019 00:46:20 /home/ashish/Desktop/images openat yes /usr/bin/nautilus ashish 6587
+137. Wednesday 03 July 2019 00:46:20 /home/ashish/Desktop/US Visa openat yes /usr/bin/nautilus ashish 6588
+138. Wednesday 03 July 2019 00:46:23 /home/ashish/Desktop/Test/Test3 openat yes /usr/bin/nautilus ashish 6590
+139. Wednesday 03 July 2019 00:46:23 /home/ashish/Desktop/Test/Test2 openat yes /usr/bin/nautilus ashish 6591
+140. Wednesday 03 July 2019 00:46:23 /home/ashish/Desktop/Test openat yes /usr/bin/nautilus ashish 6589

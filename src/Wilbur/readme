@@ -1,0 +1,257 @@
+The Folder contains the following subdirectories/files:
+
+-----------------------------------------------------------------------------------------------------------------------------
+Basics
+
+The first week was mostly about getting acquainted with tools/methods (like shell scripting, MySQL) that could be useful for the project. I extracted file and directory attributes (like time, size, hash, suffix), created relationships between files like is-equivalent (have same hash) and contains, and stored this in a MySQL database. 
+
+2nd week - 
+
+Time Directory was created with the structure Year-> Month -> Day. Since this was implemented on the same hierarchical directory structure that we want to overcome, it carries its problems, there is only one way to reach a file – one should know the exact date they were working on the file. There is no flexibility. I also embedded the location directory structure into the time directory so that all the files don't show up as a list and the location information is not lost, this also solved the problem of files having the same name. An example of a file path would be 2018/May/26/Desktop/Folder1/File1, where the folder 2018/May/26 only has files that were last modified on that day. 
+
+Tree was formed using time and location hierarchy of a given directory. Firstly, at each node one could either expand the view based on location or time hierarchy – so, if you are browsing through your Desktop you can either view all the files(or subdirectories)  in the Desktop or view the files (or subdirectories) arranged in a temporal hierarchy. So, the child node could be  Desktop/Folder1, Desktop/year-2017, etc. Similarly, these lower nodes can be further expanded based on time or location hierarchy. So, Desktop/year -2019/Folder1/month-Jan/File1,  Desktop/Folder1/year -2019/File1, and Desktop/Folder1/File1 all lead to the same file. This can be useful as the user can use multiple paths to reach a file. Since the tree can get very wide and deep, tree summarization was tried. This was in a way based on Laks's paper on summarizing hierarchical multidimensional data. Nodes were merged to include at least 20 (or some other number) files. Also, based on which expansion (time or location) at each node would have lesser children (possibly less clumsy) ,one expansion was chosen at each node. The tree was then flattened i.e nodes with a single child were merged with it. It was not very clear if the tree summarization provided any help in finding files.
+
+This folder contains the following shell scripts and c++ programs
+
+ContainsRelationship.sh 
+	Shell script to scan a directory and print out all 'contains' relationship in a file named 'ContainsRelationship (file/folder contained is printed below the folder it is contained in)'
+	Pass the directory address as an argument to the function 'scan'
+
+ObjectAttributesScan.sh
+	Scans a directory and prints out file and folder attributes (name, hash, time, extension, inode) into a file 'ObjectAttributes'
+	Pass the directory address as an argument to the function 'scan'
+
+HashScan.cpp
+	Reads the file 'Hashes' which contains the hash values of files in a directory
+	Finds out files that have the same hash and writes them one below the other in the file 'HashRelationship'
+
+HashScan.sh
+	Scans a directory and prints out file hashes (md5sum) into a file 'Hashes'
+	Pass the directory address as an argument to the function 'scan'
+
+TimeDirectory.sh
+	Scans a directory and creates a time directory structure of the form 'time/modification_year/modification_month/file' with symlinks to files 
+	Pass the directory address as an argument to the function 'scan'
+
+TimeDirectory2.sh
+	File for some test purpose
+
+TimeDirectory3.sh
+	Scans a directory and and creates a two dimensional (location and time) directory structure  with symlinks to files
+	Eg of paths would be - 'root2/year-2019/Desktop/Folder1/month-04/SubFolder1/day-22/File' , 'root2/year-2019/Desktop/Folder1/month-04/SubFolder1/day-22/File'
+	Pass the directory address as an argument to the function 'scan'
+	The Directory structure created will be worked upon by 'TimeDirectorySummarize.sh' to create a tree summarization of 2-D location and time hierarchy.
+
+TimeDirectorySummarize.sh
+	Acts on the Directory structure created by 'TimeDirectory3.sh'. Both of these together form the tree summarization of 2-D location and time hierarchy.
+	The function 'summarize' would try to find nodes in the tree hierarchy with more than 'merge_threshhold' files and call the function 'merge'
+	'merge' would create a node containing all the files in its children
+	'make_unique' would choode one of time or location hierarchy to expand each node based on how many children each dimension has - the lesser the better
+	'make clean' would remove intermediary directories 'time' and 'location'
+	'make_cleaner' would combine folders with single child to that child
+-----------------------------------------------------------------------------------------------------------------------------
+File-Size Graphs
+
+sizehistogram.py
+	Create a histogram of file sizes
+
+and some graphs for file-size analysis
+-----------------------------------------------------------------------------------------------------------------------------
+Time Directory
+
+All the files were sorted based on modification time. Clusters of 50 (or any other number) files were formed using this sorted list – files 1-50, 51-100 and so on. The modification time range of each of these groups of 50 files was found and folders were created with symlinks to these files. Time hierarchy was created above this. So the location of a file would be something like 2018/May/May_21_2018-May_30_2018/File1, where the folder  May_21_2018-May_30_2018 would contain 50 files. Similar to a) location hierarchy was also embedded into this. Example of a file path – 2018/May/May_21_2018-May_30_2018/Documents/Folder1/File1. There were also symlinks between folders of adjacent time ranges – for easy navigation. One point here was that the time range of files in a folder can be a measure of density, the longer the time range the lesser active the user was and vice versa. The shell implementation was very slow and I shifted to Python for all the later tasks. 
+
+TimeDirectory.py
+	Creates groups of files (fixed number) as folders based on last modification time
+	Adjacent ranges of time group folders have symlinks between them
+	Creates the folder 'time_root'
+
+TimeDirectoryDeeperLocation.py
+	Same as 'TimeDirectory.py' but creates the file location hierarchy below the time group folder.
+	Eg - /time_root_deeper_location/Apr_9_2019-Apr_11_2019/FileSystemTest/VISA/Offline/imm5247e.pdf
+	Creates the folder 'time_root_deeper_location'	
+
+TimeDirectoryDeeperTime.py
+	Same as 'TimeDirectory.py' but creates the time hierarchy above the time group folder.
+	Eg - /time_root_deeper_time/2019/May/May 16 2019-May 18 2019/2009 Hierarchical File Systems Are Dead.pdf
+	Creates the folder 'time_root_deeper_time'
+
+TimeDirectoryDeeper.py
+	Combination of 'TimeDirectoryDeeperTime.py' and 'TimeDirectoryDeeperLocation.py'
+	Eg of path - /time_root_deeper/2019/Mar/Mar_12_2019-Mar_17_2019/COP/Traffic road sim/makefile
+	Creates the folder 'time_root_deeper'
+	
+time_root (folder)
+	Created by 'TimeDirectory.py'
+
+time_root_deeper_location
+	Created by 'TimeDirectoryDeeperLocation.py'
+
+time_root_deeper_time
+	Created by 'TimeDirectoryDeeperTime.py'
+
+time_root_deeper
+	Created by 'TimeDirectoryDeeper.py'
+-----------------------------------------------------------------------------------------------------------------------------
+Type Directory
+
+File type analysis: Using shell commands one can find the file type and default application of a given file. The directory view was filtered based on the file type and symlinks were provided to be able to see the entire directory when needed. Example of a path : text/c++/Desktop/Folder1/File1.cpp. This may also be useful. Mobile phones usually just separate files based on their types and have no hierarchy structure. On a related note, files in the downloads and thrash folder are not stored hierarchically and it gets very difficult to find a file. Tools may be created to make this easy. 
+
+'TypeDirectoryDeeper.py' creates the directory 'type_root'
+-----------------------------------------------------------------------------------------------------------------------------
+Similarity Clustering
+
+K-means clustering was tried to group the files based on last modification times. This looked useful and the true breaks were captured. For example, all my visa documents got clustered together, so did the papers I downloaded and most of my assignments formed separate clusters each. Also noticeable was that similarly named files were in the same cluster as files created for the same purpose at the same time usually have similar names.   
+
+Filename and location analysis: There are different metrics available to compare string similarity that can be used to find files with similar names and/or directory path. After trying different metrics, Jaro similarity seemed most useful. Something like Assignment2_new/foo.cpp and Assignment2/foo.cpp are closely related due to two reasons – the folder containing them denote different versions of the same assignment and the files have the same name. The two features (path and file name) can be assigned different weights.  
+
+Clustering based on Content was based on various kinds of methods like - hashtables, NLP, String Similarity etc. String Comparison (levenshtein similarity): Similarity is an unbounded number. Lakes a lot of time (didn’t happen even overnight). NLP: Works quite well, is fast too. Downside – designed to work on human language vocab. Filecmp (uses os.stat): Only returns files that have the same content. Fast. Similarity Sensitive Hashtable - fast and very useful, also works on program files.
+
+Use the variable 'path' to specify the directory that needs to be scanned in all of these programs
+
+ContentSimilarityHash.py
+	Prints out text files that have similar content by putting them in similarity sensitive hash tables
+
+ContentSimilarityNLP.py
+	Prints out text files that have similar content by using sklearn NLP library
+
+ContentSimilarityString.py
+	Prints out text files that have similar content by using Levenshtein string similarity metric
+
+ContentSimilaritySys.py
+	Prints out text files that have same content by using filecmp library - it compares file metadeta and hashes
+
+NameClustering.py
+	Prints out files that have similar names and location path using Jaro string similarity and Levenshtein string similarity
+	Uses sklearn clustering library
+
+TimeClustering.py
+	Clusters files that have similar last modofication times based on k-means clustering algorithm
+	Creates a directory 'time_clustering' to show the cluster of files formed
+
+time_clustering (folder)
+	Created by 'TimeClustering.py'
+
+ProgramOutput (folder)
+	Contains some outputs of similarity clustering programs
+-----------------------------------------------------------------------------------------------------------------------------
+RelationshipDirectory
+
+RelationshipDirectory.py
+	Creates a 'copy' of the Directory specified bu the variable 'path' by creating symlinks to files
+	Files are contained in a folder with the same name as file
+	This Directory is then acted upon by other programs in this forder to create links to similar files
+	The Directory formed is 'relationship_root2'
+
+ContentSimilarityDirectory.py
+	Another program ('RelationshipDirectory.py') creates a 'copy' of directory specified with the variable 'path' with symlinks to all the files inside a folder with the same name as the files.
+	This Program creates a Directory that contains symlinks to all the files with similar content. 
+	These symlinks are in a Directory which is a sibling to the file symlink.
+	Specify the path of directory to be scanned using the variable 'path'
+	
+NameSimilaityDirectory.py
+	Same as 'ContenSimilarityDirectory.py' - just files with similar name.
+
+TimeSimilarityDirectory.py
+	Same as 'ContenSimilarityDirectory.py' - just files with similar last modification timestamps.
+-----------------------------------------------------------------------------------------------------------------------------
+RelationshipVisualization
+
+ContainsRelationship.sh 
+	Shell script to scan a directory and print out all 'contains' relationship in a file named 'graphdata5' in a specific format as needed by 'GraphVisualization2.py'
+	Pass the directory address as an argument to the function 'scan'
+	Run this before Graph1.py, Graph2.py, Graph3.py and Graph4.py
+
+FileTime.py
+	Used by 'ContainsRelationship.sh' to compute folder modification times as the time when the last file mofification happened among the files that it contains
+
+Graph1.py
+	Prints out files that have similar names in a format as required by GraphVisualization2.py
+	Print the result into 'graphdata5' from the command line
+	Variable 'path' specifies the directory that is to be scanned
+	
+
+Graph2.py
+	Prints out files that have similar modification times in a format as required by GraphVisualization2.py
+	Print the result into 'graphdata5' from the command line
+	Variable 'path' specifies the directory that is to be scanned
+	Uses k-means clustering
+
+Graph3.py
+	Prints out files that have similar content in a format as required by GraphVisualization2.py
+	Print the result into 'graphdata5' from the command line
+	Variable 'path' specifies the directory that is to be scanned
+
+Graph4.py
+	Prints out files that have same hashes in a format as required by GraphVisualization2.py
+	Print the result into 'graphdata5' from the command line
+	Variable 'path' specifies the directory that is to be scanned
+
+GraphVisualization2.py
+	Visualizing File Relationships using python librarires from data in 'graphdata5'
+	For more see 'Demo.mp4' video
+
+Demos (Folder)
+	Contains some files used by 'GraphVisualization2.py'
+-----------------------------------------------------------------------------------------------------------------------------
+Test - RelationshipVisualization
+
+GraphVisualization.py
+	using another graph visualization library 
+	input data from graphdata1, graphdata2 and graphdata3'''
+
+graphdata1, graphdata2 and graphdata3
+	input for 'GraphVisualization.py'
+
+graph.html
+	output from 'GraphVisualization.py'
+-----------------------------------------------------------------------------------------------------------------------------
+Relationship Visualization-Drive and Gmail
+	
+Drive,GmailAndSystemRelations.py
+	Finds files with similar modification time, names, and content.
+	Scans local system directory specified by the variable 'path' and Google Drive files.
+	Output needs to be printed to 'graphdata5', so that 'GraphVisualization2.py' can use it.
+	
+ContainsRelationship.sh 
+	Shell script to scan a directory and print out all 'contains' relationship in a file named 'graphdata5' in a specific format as needed by 'GraphVisualization2.py'
+	Pass the directory address as an argument to the function 'scan'
+	Run this after Drive,GmailAndSystemRelations.py 
+
+FileTime.py
+	Used by 'ContainsRelationship.sh' to compute folder modification times as the time when the last file mofification happened among the files that it contains
+
+Demos (Folder)
+	Contains some files used by 'GraphVisualization2.py'
+
+credentials.json
+	needed by 'Drive,GmailAndSystemRelations.py'
+
+token.pickle
+	needed by 'Drive,GmailAndSystemRelations.py'
+
+accesslog
+	stores the file access audit log
+	use 'ausearch -k fstrack | aureport -f -i' in the command prompt to generate the log after activating the auditd log daemon with the required monitoring rule and keyword 'fstrack'
+
+MostFrequentAccesses.py
+	finds files/folders that are accessed most frequently based on data in the file 'accesslog'	
+
+email_metadata.py
+	scans gmail mail box and stores metadata in the file 'email_metadata'
+
+email_metadata
+	contains gmail metadata
+-----------------------------------------------------------------------------------------------------------------------------
+CleanTimeDirectory.sh
+	Shell script to remove directories with single child by merging them with that child
+	Pass the path to the directory that needs to be scanned for such sub-directories as an argument to 'scan'
+-----------------------------------------------------------------------------------------------------------------------------
+PhotoSimilarityHash.py
+	Test program for image similarity
+-----------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
