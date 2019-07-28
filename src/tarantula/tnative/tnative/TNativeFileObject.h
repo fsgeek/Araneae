@@ -15,10 +15,11 @@ class TNativeGenerator
 	PFILE_OBJECT *m_FileObject; // we always need a file object in order to do anything
 
 public:
-	TNativeGenerator();
-	~TNativeGenerator();
+	TNativeGenerator() noexcept;
+	virtual ~TNativeGenerator() noexcept;
 
-
+#pragma warning(push)
+#pragma warning(disable:26436 26447) // SAL annotations do not raise 
 	virtual NTSTATUS Read(_Out_writes_bytes_(Length) void *Buffer, _In_ size_t Offset, _In_ ULONG Length, _In_ ULONG Flags = 0, _In_ ULONG Key = 0) noexcept {
 		//
 		// Default is "not implemented"
@@ -66,6 +67,7 @@ public:
 	}
 
 	// TODO: there are other functions common to all generators: EAs, ACLs, Information.
+#pragma warning(pop)
 };	
 
 class TNativeFileObject : public TNativeGenerator
@@ -83,11 +85,11 @@ class TNativeFileObject : public TNativeGenerator
 	FileContextNonPaged *m_FileContextNonPaged = nullptr;
 	FileContextPaged* m_FileContextPaged = nullptr;
 
-	TNativeFileObject();
-	~TNativeFileObject();
+	TNativeFileObject() noexcept;
+	~TNativeFileObject() noexcept;
 
 public:
-	static TNativeFileObject* CreateTNativeFileObject(_In_ PFILE_OBJECT FileObject);
+	static TNativeFileObject* CreateTNativeFileObject(_In_ PFILE_OBJECT FileObject) noexcept;
 
 	NTSTATUS Read(_Out_writes_bytes_(Length) void* Buffer, _In_ size_t Offset, _In_ ULONG Length, _In_ ULONG Flags = 0, _In_ ULONG Key = 0) noexcept override;
 	NTSTATUS Write(_In_reads_bytes_(Length) void* Buffer, _In_ size_t Offset, _In_ ULONG Length, _In_ ULONG Flags = 0, ULONG Key = 0) noexcept override;
@@ -99,8 +101,8 @@ class TNativeDirectoryObject : public TNativeGenerator
 	FSRTL_ADVANCED_FCB_HEADER m_Header;
 
 
-	TNativeDirectoryObject();
-	~TNativeDirectoryObject();
+	TNativeDirectoryObject() noexcept;
+	~TNativeDirectoryObject() noexcept;
 
 public:
 	static TNativeDirectoryObject* CreateTNativeDirectoryObject(_In_ PFILE_OBJECT FileObject) noexcept;
