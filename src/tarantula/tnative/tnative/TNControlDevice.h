@@ -10,10 +10,10 @@ protected:
 	~TNControlDevice() noexcept;
 
 public:
-	NTSTATUS Create(_In_ PIRP Irp) override;
-	NTSTATUS Close(_In_ PIRP Irp) override;
-	NTSTATUS DeviceControl(_In_ PIRP Irp) override;
-	NTSTATUS Cleanup(_In_ PIRP Irp) override;
+	NTSTATUS Create(_In_ PIRP Irp) noexcept override;
+	NTSTATUS Close(_In_ PIRP Irp) noexcept override;
+	NTSTATUS DeviceControl(_In_ PIRP Irp) noexcept override;
+	NTSTATUS Cleanup(_In_ PIRP Irp) noexcept override;
 
 	_Must_inspect_result_
 	static TNControlDevice* CreateTNControlDevice(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING DeviceName) noexcept;

@@ -2,6 +2,7 @@
 #include <ntstatus.h>
 //#include "cpprt.h"
 #include "tnative-resource.h"
+#include "TNativeDevice.h"
 #include "TNControlDevice.h"
 #include "TNRegistry.h"
 #include "cpprt.h"
@@ -50,6 +51,7 @@ static void TNativeUnload(PDRIVER_OBJECT DriverObject)
 }
 #pragma warning(pop)
 
+
 extern "C" DRIVER_INITIALIZE DriverEntry;
 #pragma warning(suppress:26461)
 extern "C" NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath)
@@ -95,6 +97,13 @@ extern "C" NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING Reg
 			status = STATUS_INSUFFICIENT_RESOURCES;
 			break;
 		}
+#pragma warning(push)
+#pragma warning(disable: 28023 28169) // This is a generic handler, so I don't define it's dispatch type
+#pragma warning(disable: 26446 26482) // yes, it's bad C++ code, but we're gluing worlds together
+		for (unsigned index = 0; index < IRP_MJ_MAXIMUM_FUNCTION; index++) {
+			DriverObject->MajorFunction[index] = TNativeDevice::DispatchRequest;
+		}
+#pragma warning(pop)
 
 	}
 

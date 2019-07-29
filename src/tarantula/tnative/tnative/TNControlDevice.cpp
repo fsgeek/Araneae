@@ -13,7 +13,7 @@ TNControlDevice::~TNControlDevice() noexcept
 }
 
 _Use_decl_annotations_
-NTSTATUS TNControlDevice::Create(PIRP Irp) 
+NTSTATUS TNControlDevice::Create(PIRP Irp) noexcept
 {
 	PIO_STACK_LOCATION iosl = IoGetCurrentIrpStackLocation(Irp);
 	NTSTATUS status = STATUS_UNSUCCESSFUL;
@@ -35,7 +35,7 @@ NTSTATUS TNControlDevice::Create(PIRP Irp)
 }
 
 _Use_decl_annotations_
-NTSTATUS TNControlDevice::Close(PIRP Irp)
+NTSTATUS TNControlDevice::Close(PIRP Irp) noexcept
 {
 	PIO_STACK_LOCATION iosl = IoGetCurrentIrpStackLocation(Irp);
 	NTSTATUS status = STATUS_UNSUCCESSFUL;
@@ -50,7 +50,7 @@ NTSTATUS TNControlDevice::Close(PIRP Irp)
 }
 
 _Use_decl_annotations_
-NTSTATUS TNControlDevice::DeviceControl(PIRP Irp) 
+NTSTATUS TNControlDevice::DeviceControl(PIRP Irp) noexcept
 {
 	PIO_STACK_LOCATION iosl = IoGetCurrentIrpStackLocation(Irp);
 	NTSTATUS status = STATUS_UNSUCCESSFUL;
@@ -75,7 +75,7 @@ NTSTATUS TNControlDevice::DeviceControl(PIRP Irp)
 }
 
 _Use_decl_annotations_
-NTSTATUS TNControlDevice::Cleanup(PIRP Irp)
+NTSTATUS TNControlDevice::Cleanup(PIRP Irp) noexcept
 {
 	PIO_STACK_LOCATION iosl = IoGetCurrentIrpStackLocation(Irp);
 	NTSTATUS status = STATUS_UNSUCCESSFUL;
