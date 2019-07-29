@@ -1,0 +1,9 @@
+bare_jrnl.*
+*.aux
+*.log
+*.bbl
+*.blg
+.ipynb_checkpoints
+.vscode/
+*.synctex*
+
