@@ -57,3 +57,5 @@ dkms.conf
 *.spc
 *.pvk
 
+# VS stuff
+.vs/
