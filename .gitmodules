@@ -7,3 +7,7 @@
 [submodule "src/tarantula/libfuse"]
 	path = src/tarantula/libfuse
 	url = https://github.com/libfuse/libfuse
+[submodule "src/whitedb"]
+	path = src/whitedb
+	url = https://github.com/fsgeek/whitedb.git
+	branch = wamgraph
