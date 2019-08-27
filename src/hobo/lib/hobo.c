@@ -13,7 +13,8 @@
 
 static void hobo_lookup(fuse_req_t req, fuse_ino_t parent, const char *name)
 {
-    struct fuse_entry_param e;
+    (void) parent;
+    (void) name;
 
     if (1 == parent) {
         // handle root here
@@ -53,7 +54,7 @@ static void hobo_open(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
 
 // registration structure for operations we support
 
-static struct fuse_lowlevel hobo_ops = {
+struct fuse_lowlevel_ops hobo_ops = {
     .lookup = hobo_lookup,
     .getattr = hobo_getattr,
     .readdir = hobo_readdir,

@@ -86,6 +86,12 @@ if not cc.compiles(code, args: [ '-O0', '-Werror=unused-result' ])
      add_project_arguments('-Wno-unused-result', language: 'c')
 endif
 
+deps = [dependency('fuse3', version : '>=3.4', required : true)]
+
+# depends on fuse headers
+fuse_c_cfg = run_command('pkg-config', '--cflags', 'fuse3')
+add_global_arguments(fuse_c_cfg.stdout().strip(), language : 'c')
+
 # '.' will refer to current build directory, which contains config.h
 include_dirs = include_directories('include', 'lib', '.')
 
