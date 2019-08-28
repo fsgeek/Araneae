@@ -1,37 +1,14 @@
-#define FUSE_USE_VERSION 34
+//
+// Hobo File System
+//
+// (C) Copyright 2019 Tony Mason
+//
+// Licensed under the Aranae project license
+// https://github.com/fsgeek/Araneae/blob/master/LICENSE
+//
+#include "hobofs.h"
+#include "hobo.h"
 
-#include <fuse_lowlevel.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <assert.h>
-
-
-
-static void hobo_lookup(fuse_req_t req, fuse_ino_t parent, const char *name)
-{
-    (void) parent;
-    (void) name;
-
-    if (1 == parent) {
-        // handle root here
-    }
-
-    // stub
-    fuse_reply_err(req, ENOTSUP);
-}
-
-static void hobo_getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
-{
-    (void)fi; // unreferenced
-    (void)ino;
-
-    // stub
-    fuse_reply_err(req, ENOTSUP);
-}
 
 static void hobo_readdir(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi)
 {
@@ -54,9 +31,14 @@ static void hobo_open(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
 
 // registration structure for operations we support
 
-struct fuse_lowlevel_ops hobo_ops = {
-    .lookup = hobo_lookup,
-    .getattr = hobo_getattr,
-    .readdir = hobo_readdir,
-    .open = hobo_open,
-};
+static struct fuse_lowlevel_ops hobo_ops;
+
+const struct fuse_lowlevel_ops *hobo_init(void)
+{
+    hobo_ops.lookup = hobo_lookup;
+    hobo_ops.getattr = hobo_getattr;
+    hobo_ops.readdir = hobo_readdir;
+    hobo_ops.open = hobo_open;
+
+    return &hobo_ops;
+}

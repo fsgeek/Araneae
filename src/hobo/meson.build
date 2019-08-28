@@ -88,6 +88,7 @@ endif
 
 deps = [dependency('fuse3', version : '>=3.4', required : true),
         dependency('threads'),
+        dependency('uuid'),
         ]
 
 # depends on fuse headers

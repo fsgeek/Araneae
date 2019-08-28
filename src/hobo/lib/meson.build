@@ -1,9 +1,14 @@
-libhobo_sources = ['hobo.c', 'hobo.h' ]
+libhobo_sources = ['getattr.c',
+                   'hobo.c', 'hobo.h',
+                   'hobo-list.h',
+                   'ino-lookup.c', 'ino-lookup.h',
+                   'lookup.c',
+                   ]
 
-deps = [ thread_dep ]
-
-libfuse = cc.find_library('libfuse', required: true)
-deps += [libfuse]
+deps = [dependency('fuse3', version : '>=3.4', required : true),
+        dependency('threads'),
+        dependency('uuid'),
+        ]
 
 libdl = cc.find_library('dl', required: false)
 if libdl.found()
@@ -15,7 +20,7 @@ libhobo = library('hobo', libhobo_sources, version: meson.project_version(),
                   dependencies: deps, install: false)
 
 pkg = import('pkgconfig')
-pkg.generate(libraries: [ '-lfuse', '-lpthread' ],
+pkg.generate(libraries: [ '-lfuse', '-lpthread', '-luuid' ],
              libraries_private: '-ldl',
              version: meson.project_version(),
              name: 'hobo',

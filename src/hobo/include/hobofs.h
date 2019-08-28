@@ -10,5 +10,13 @@
 #define FUSE_USE_VERSION 36
 
 #include <fuse_lowlevel.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <assert.h>
 
-extern struct fuse_lowlevel_ops hobo_ops;
+
+const struct fuse_lowlevel_ops *hobo_init(void);

@@ -8,11 +8,8 @@
 //
 
 #include <hobofs.h>
-#include <hobo.h>
-#include <stdio.h>
-#include <memory.h>
-#include <unistd.h>
-#include <stdlib.h>
+
+static const char *hobofs = "HoboFS";
 
 int main(int argc, char **argv)
 {
@@ -25,11 +22,15 @@ int main(int argc, char **argv)
     int opt_args_created = 0;
     struct fuse_loop_config fl_config;
     struct fuse_session *session = NULL;
+    const struct fuse_lowlevel_ops *hobo_ops;
+
+    printf("%s: starting...\n", hobofs);
+    hobo_ops = hobo_init();
 
     memset(&fuse_opts, 0, sizeof(fuse_opts));
 
     // handle the command line options
-    while (fuse_parse_cmdline(&args, &fuse_opts)) {
+    while (0 == fuse_parse_cmdline(&args, &fuse_opts)) {
         opt_args_created = 1;
 
         if (fuse_opts.show_help || (NULL == fuse_opts.mountpoint)) {
@@ -54,21 +55,24 @@ int main(int argc, char **argv)
         }
 
         // start a new session
-        session = fuse_session_new(&args, &hobo_ops, sizeof(hobo_ops), NULL);
+        session = fuse_session_new(&args, hobo_ops, sizeof(struct fuse_lowlevel_ops), NULL);
 
         if (NULL == session) {
+            fprintf(stderr, "%s: fuse_session_new failed\n", hobofs);
             code = 1;
             break;
         }
         se_session_created = 1;
 
-        if (!fuse_set_signal_handlers(session)) {
+        if (fuse_set_signal_handlers(session)) {
+            fprintf(stderr, "%s: fuse_set_signal_handlers failed\n", hobofs);
             code = 1;
             break;
         }
         se_signal_handlers_installed = 1;
 
-        if (!fuse_session_mount(session, fuse_opts.mountpoint)) {
+        if (fuse_session_mount(session, fuse_opts.mountpoint)) {
+            fprintf(stderr, "%s: fuse_session_mount failed\n", hobofs);
             code = 1;
             break;
         }
@@ -78,16 +82,22 @@ int main(int argc, char **argv)
 
         if (fuse_opts.singlethread) {
             code = fuse_session_loop(session);
+           fprintf(stderr, "%s: fuse_session_loop returned %d\n", hobofs, code);
         }
         else {
             memset(&fl_config, 0, sizeof(fl_config));
             fl_config.clone_fd = fuse_opts.clone_fd;
             fl_config.max_idle_threads = 10; // default - should this be based on the core count?
             code = fuse_session_loop_mt(session, &fl_config);
+           fprintf(stderr, "%s: fuse_session_loop_mt returned %d\n", hobofs, code);
         }
 
         // done with loop
         break;
+    } 
+
+    if (!opt_args_created) {
+
     }
 
     // cleanup
