@@ -83,8 +83,9 @@ static hobo_internal_object_t *lookup_by_uuid_locked(uuid_t *uuid)
     return found ? internal_object : NULL;
 }
 
-static void release(hobo_internal_object_t *object)
+static void release(hobo_internal_object_t *object, hobo_object_cleanup_callback_t cleanup)
 {
+    void *cleanup_data = NULL;
     //
     // this is the only place I try to be tricky
     // To delete, the refcount must do the 1->0 transition
@@ -112,13 +113,18 @@ static void release(hobo_internal_object_t *object)
         {
             // now it's safe to remove it
             remove_list_entry(&object->list_entry);
+            cleanup_data = object->object.data;
             free(object);
         }
     }
     unlock_table();
+
+    if ((NULL != cleanup) && (NULL != cleanup_data)) {
+        cleanup(cleanup_data);
+    }
 }
 
-static hobo_internal_object_t *object_create(fuse_ino_t inode, uuid_t *uuid)
+static hobo_internal_object_t *object_create(fuse_ino_t inode, uuid_t *uuid, void *data)
 {
     hobo_internal_object_t *internal_object = (hobo_internal_object_t *)malloc(sizeof(hobo_internal_object_t));
     hobo_internal_object_t *dummy = NULL;
@@ -128,6 +134,7 @@ static hobo_internal_object_t *object_create(fuse_ino_t inode, uuid_t *uuid)
         initialize_list_entry(&internal_object->list_entry);
         memcpy(internal_object->object.uuid, uuid, sizeof(uuid_t));
         internal_object->object.inode = inode;
+        internal_object->object.data = data;
         internal_object->refcount = 2;
 
         lock_table_for_change();
@@ -151,7 +158,7 @@ static hobo_internal_object_t *object_create(fuse_ino_t inode, uuid_t *uuid)
     return internal_object;
 }
 
-hobo_object_t *hobo_object_create(fuse_ino_t inode, uuid_t *uuid)
+hobo_object_t *hobo_object_create(fuse_ino_t inode, uuid_t *uuid, void *data)
 {
     uuid_t dummy_uuid;
 
@@ -161,7 +168,7 @@ hobo_object_t *hobo_object_create(fuse_ino_t inode, uuid_t *uuid)
         uuid = &dummy_uuid;
     }
 
-    hobo_internal_object_t *internal_object = object_create(inode, uuid);
+    hobo_internal_object_t *internal_object = object_create(inode, uuid, data);
 
     return internal_object ? &internal_object->object : NULL;
 }
@@ -186,11 +193,11 @@ hobo_object_t *hobo_object_lookup_by_uuid(uuid_t *uuid)
     return internal_object ? &internal_object->object : NULL;
 }
 
-void hobo_object_release(hobo_object_t *object)
+void hobo_object_release(hobo_object_t *object, hobo_object_cleanup_callback_t cleanup)
 {
     hobo_internal_object_t *internal_object = container_of(object, hobo_internal_object_t, object);
 
-    release(internal_object);
+    release(internal_object, cleanup);
 }
 
 static pthread_rwlock_t table_lock = PTHREAD_RWLOCK_INITIALIZER;

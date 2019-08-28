@@ -9,10 +9,9 @@
 
 #include "hobo.h"
 
-static void getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
+static void opendir(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
 {
-    struct stat st;
-    hobo_object_t *hob;
+    hobo_object_t *hob = NULL;
 
     fprintf(stderr, "HoboFS: called %s, req = 0x%p, ino = %lu, fi = 0x%p\n",__PRETTY_FUNCTION__, req, ino, fi);
 
@@ -21,14 +20,15 @@ static void getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
         fuse_reply_err(req, ENOENT);
         return;
     }
+    fi->fh = (uintptr_t)hob;
+    fi->cache_readdir = 1;
 
-    if (NULL == hob->data) {
-        fuse_reply_err(req, ENOTSUP);
-        return;
-    }
-
-    fuse_reply_attr(req, hob->data, 86400); // cache for a day
+    fuse_reply_open(req, fi);
     return;
 }
 
-hobo_getattr_t hobo_getattr = getattr;
+
+hobo_opendir_t hobo_opendir = opendir;
+
+
+

@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     const struct fuse_lowlevel_ops *hobo_ops;
 
     printf("%s: starting...\n", hobofs);
-    hobo_ops = hobo_init();
+    hobo_ops = hobo_getops();
 
     memset(&fuse_opts, 0, sizeof(fuse_opts));
 

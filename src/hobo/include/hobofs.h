@@ -19,4 +19,4 @@
 #include <assert.h>
 
 
-const struct fuse_lowlevel_ops *hobo_init(void);
+const struct fuse_lowlevel_ops *hobo_getops(void);
