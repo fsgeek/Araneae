@@ -22,4 +22,5 @@ pkg.generate(libraries: [ '-lfuse', '-lpthread' ],
              description: 'Hobo Filesystem')
 
 libhobo_dep = declare_dependency(include_directories: include_dirs,
+                                 link_with: libhobo, 
                                  dependencies: deps)

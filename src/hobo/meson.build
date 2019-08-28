@@ -86,7 +86,9 @@ if not cc.compiles(code, args: [ '-O0', '-Werror=unused-result' ])
      add_project_arguments('-Wno-unused-result', language: 'c')
 endif
 
-deps = [dependency('fuse3', version : '>=3.4', required : true)]
+deps = [dependency('fuse3', version : '>=3.4', required : true),
+        dependency('threads'),
+        ]
 
 # depends on fuse headers
 fuse_c_cfg = run_command('pkg-config', '--cflags', 'fuse3')
@@ -97,6 +99,8 @@ include_dirs = include_directories('include', 'lib', '.')
 
 # Common dependencies
 thread_dep = dependency('threads') 
+
+deps += [thread_dep]
 
 #
 # Read build files from sub-directories
