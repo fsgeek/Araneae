@@ -103,5 +103,6 @@ extern hobo_readdirplus_t hobo_readdirplus;
 extern hobo_copy_file_range_t hobo_copy_file_range;
 
 extern hobo_object_t *root_hob;
+extern void *hobo_db;
 
 #endif // __HOBO_H__

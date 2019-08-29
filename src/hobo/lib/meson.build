@@ -4,6 +4,7 @@ libhobo_sources = [
                    'getattr.c',
                    'hobo.c', 'hobo.h',
                    'hobo-list.h',
+                   'hobodb.c', 'hobodb.h',
                    'init.c',
                    'ino-lookup.c', 'ino-lookup.h',
                    'lookup.c',
@@ -26,6 +27,7 @@ endif
 
 libhobo = library('hobo', libhobo_sources, version: meson.project_version(),
                   soversion: '0', include_directories: include_dirs,
+                  c_args : '-fms-extensions',
                   dependencies: deps, install: false)
 
 pkg = import('pkgconfig')

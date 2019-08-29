@@ -8,6 +8,7 @@
 //
 
 #include "hobo.h"
+#include <whitedb/dbapi.h>
 
 static void destroy(void *userdata)
 {
@@ -19,6 +20,7 @@ static void destroy(void *userdata)
     }
 
     // TODO: cleanup/save any persistent store
+    wg_detach_database(hobo_db);
 
 }
 hobo_destroy_t hobo_destroy = destroy;
