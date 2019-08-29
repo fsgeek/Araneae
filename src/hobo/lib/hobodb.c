@@ -38,7 +38,7 @@ int hobodb_base_encode(void *db, hobodb_base_t *base, void **record)
     wg_int lock_id;
     uuid_t base_type_uuid;
     char uuid_type[16];
-    
+   
     
     record_type_to_uuid("base", base_type_uuid);
     assert(!uuid_is_null(base_type_uuid));
@@ -83,6 +83,15 @@ int hobodb_base_encode(void *db, hobodb_base_t *base, void **record)
             assert(wg_set_field(db, rec, hobodb_base_field_uri, enc) >= 0);
             
             assert(0 != wg_end_write(db, lock_id)); // unlock failure is catastrophic
+
+            // Done
+            break;
+        }
+    }
+
+    if (NULL != base) {
+        if (NULL != record) {
+            *record = base->record;
         }
     }
 
@@ -142,17 +151,35 @@ int hobodb_base_decode(void *db, void *record, hobodb_base_t *base)
         }
 
         assert(0 != wg_end_read(db, lock_id)); // unlock failure is catastrophic
+
+        // done
+        break;
     }
 
     return 0;
+}
+
+
+static void init_base(hobodb_base_t *base) 
+{
+    record_type_to_uuid("base", base->type);
+    uuid_generate(base->uuid);
+    assert(!uuid_is_null(base->uuid));
+
+    base->ctime = time(NULL);
+    base->atime = time(NULL);
 }
 
 hobodb_base_t *hobodb_alloc_base(void)
 {
     hobodb_base_t *newbase = (hobodb_base_t *)malloc(sizeof(hobodb_base_t));
 
+
     while (NULL != newbase) {
         memset(newbase, 0, sizeof(hobodb_base_t));
+        init_base(newbase);
+        // done
+        break;
     }
 
     return newbase;
@@ -161,6 +188,14 @@ hobodb_base_t *hobodb_alloc_base(void)
 void hobodb_free_base(hobodb_base_t *base)
 {
     if (NULL != base) {
+        if (base->uri.name) {
+            free(base->uri.name);
+            base->uri.name = NULL;
+        }
+        if (base->uri.prefix) {
+            free(base->uri.prefix);
+            base->uri.prefix = NULL;
+        }
         free(base);
         base = NULL;
     }
@@ -174,17 +209,127 @@ hobodb_base_t *hobodb_lookup_base(void *db, uuid_t uuid)
     return (hobodb_base_t *)0;
 }
 
+//
+// hobodb_update_base: we update the mutable fields of the base
+//                     object.
+//
+// Note: the type and uuid of this object are immutable; we do not
+//       overwrite them.
+//
 int hobodb_update_base(void *db, hobodb_base_t *base)
 {
-    (void) db;
-    (void) base;
+    wg_int enc_ctime = 0;
+    wg_int enc_atime = 0;
+    wg_int enc_uri = 0;
+    int code = -EINVAL;
+    wg_int lock_id;
+    void *rec;
 
-    return -ENOTSUP;
+    // Check invariants
+    assert(NULL != base);
+    assert(NULL != base->record);
+    rec = (void *) base->record;
+
+    // encode ctime
+    enc_ctime = wg_encode_int(db, base->ctime);
+    assert(WG_ILLEGAL != enc_ctime);
+
+    // encode atime
+    enc_atime = wg_encode_int(db, base->atime);
+    assert(WG_ILLEGAL != enc_atime);
+
+    // encode uri
+    enc_uri = wg_encode_uri(db, base->uri.name, base->uri.prefix);
+    assert(WG_ILLEGAL != enc_uri);
+
+    //
+    // we update under the database lock
+    // We encode without it, because we're changing local state
+    // Of course, this doesn't guarantee someone else isn't
+    // updating this already anyway.  LOTS of work to do to make
+    // this code reasonably parallel (so this probably doesn't matter)
+    //
+    lock_id = wg_start_write(db);
+    while (0 != lock_id) {
+        // TODO: should we store these as database timestamps?
+        // store ctime of this record
+        assert(wg_set_field(db, rec, hobodb_base_field_ctime, enc_ctime) >= 0);
+        assert(wg_set_field(db, rec, hobodb_base_field_atime, enc_atime) >= 0);
+        assert(wg_set_field(db, rec, hobodb_base_field_uri, enc_uri) >= 0);
+        assert(0 != wg_end_write(db, lock_id)); // unlock failure is catastrophic
+        code = 0;
+        break;
+    }
+    
+    return code;
+
 }
 
 
+// TODO: make this static, remove this declaration
+int hobodb_update_relationship(void *db, hobodb_relationship_t *relationship);
+
+int hobodb_update_relationship(void *db, hobodb_relationship_t *relationship)
+{
+    int code = -EINVAL;
+    wg_int enc_object1 = 0;
+    wg_int enc_object2 = 0;
+    wg_int enc_relationship = 0;
+    wg_int enc_properties = 0;
+    wg_int enc_attributes = 0;
+    wg_int enc_labels = 0;
+    wg_int lock_id = 0;
+    void *rec = NULL;
+    char uuid_type[16];
 
 
+    memset(uuid_type, 0, sizeof(uuid_type));
+    strncpy(uuid_type, "uuid", sizeof(uuid_type)-1);
+
+    assert(NULL != relationship);
+    assert(NULL != relationship->record);
+    rec = (void *) relationship->record;
+    
+    code = hobodb_update_base(db, (hobodb_base_t *) relationship);
+    if (0 != code) {
+        return code;
+    }
+
+    enc_object1 = wg_encode_blob(db, (char *)relationship->object1, uuid_type, (wg_int)sizeof(uuid_t));
+    assert(WG_ILLEGAL != enc_object1);
+
+    enc_object2 = wg_encode_blob(db, (char *)relationship->object2, uuid_type, (wg_int)sizeof(uuid_t));
+    assert(WG_ILLEGAL != enc_object2);
+
+    enc_relationship = wg_encode_blob(db, (char *)relationship->relationship, uuid_type, (wg_int)sizeof(uuid_t));
+    assert(WG_ILLEGAL != enc_relationship);
+
+    enc_properties = wg_encode_blob(db, (char *)relationship->properties, uuid_type, (wg_int)sizeof(uuid_t));
+    assert(WG_ILLEGAL != enc_properties);
+
+    enc_attributes = wg_encode_blob(db, (char *)relationship->attributes, uuid_type, (wg_int)sizeof(uuid_t));
+    assert(WG_ILLEGAL != enc_attributes);
+
+    enc_labels = wg_encode_blob(db, (char *)relationship->labels, uuid_type, (wg_int)sizeof(uuid_t));
+    assert(WG_ILLEGAL != enc_labels);
+
+    lock_id = wg_start_write(db);
+    while (0 != lock_id) {
+        // TODO: should we store these as database timestamps?
+        // store ctime of this record
+        assert(wg_set_field(db, rec, hobodb_relationship_field_object1, enc_object1) >= 0);
+        assert(wg_set_field(db, rec, hobodb_relationship_field_object2, enc_object2) >= 0);
+        assert(wg_set_field(db, rec, hobodb_relationship_field_relationship, enc_relationship) >= 0);
+        assert(wg_set_field(db, rec, hobodb_relationship_field_properties, enc_properties) >= 0);
+        assert(wg_set_field(db, rec, hobodb_relationship_field_attributes, enc_attributes) >= 0);
+        assert(wg_set_field(db, rec, hobodb_relationship_field_attributes, enc_labels) >= 0);
+        assert(0 != wg_end_write(db, lock_id)); // unlock failure is catastrophic
+        code = 0;
+        break;
+    }
+
+    return code;
+}
 
 
 int hobodb_relationship_encode(void *db, hobodb_relationship_t *relationship, void **record)

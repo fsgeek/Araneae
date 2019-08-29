@@ -11,7 +11,6 @@
 
 static void getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
 {
-    struct stat st;
     hobo_object_t *hob;
 
     fprintf(stderr, "HoboFS: called %s, req = 0x%p, ino = %lu, fi = 0x%p\n",__PRETTY_FUNCTION__, req, ino, fi);

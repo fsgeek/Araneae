@@ -64,7 +64,7 @@ configure_file(output: 'config.h',
 #
 add_project_arguments('-D_REENTRANT', '-DHAVE_CONFIG_H', '-Wall', '-Wextra', '-Wno-sign-compare',
                       '-Wstrict-prototypes', '-Wmissing-declarations', '-Wwrite-strings',
-                      '-fno-strict-aliasing', language: 'c')
+                      '-fno-strict-aliasing', '-fms-extensions', language: 'c')
 add_project_arguments('-D_REENTRANT', '-DHAVE_CONFIG_H', '-D_GNU_SOURCE',
                      '-Wall', '-Wextra', '-Wno-sign-compare', '-std=c++11',
                      '-Wmissing-declarations', '-Wwrite-strings',
@@ -106,7 +106,7 @@ deps += [thread_dep]
 #
 # Read build files from sub-directories
 #
-subdirs = [ 'lib', 'include', 'fs', 'test' ]
+subdirs = [ 'lib', 'include', 'fs', 'test', 'uri' ]
 
 foreach n : subdirs
     subdir(n)
