@@ -91,10 +91,60 @@ int hobodb_base_encode(void *db, hobodb_base_t *base, void **record)
 
 int hobodb_base_decode(void *db, void *record, hobodb_base_t *base)
 {
-    (void) db;
-    (void) base;
-    (void) record;
-    return ENOTSUP;
+    uuid_t base_type_uuid;
+    wg_int length;
+    wg_int lock_id;
+    wg_int enc;
+
+    assert(NULL != db);
+    assert(NULL != base);
+    assert(NULL != record);
+    assert(NULL == base->record); // assume we aren't replacing the record - if we are, more code to write!
+
+    record_type_to_uuid("base", base_type_uuid);
+    assert(!uuid_is_null(base_type_uuid));
+
+    lock_id = wg_start_read(db);
+    while (0 != lock_id) {
+        length = wg_get_record_len(db, record);
+        assert(length >= hobodb_base_field_max);
+
+        enc = wg_get_field(db, record, hobodb_base_field_type);
+        assert(WG_BLOBTYPE == wg_get_encoded_type(db, enc));
+        assert(sizeof(uuid_t) == wg_decode_blob_len(db, enc));
+        memcpy(&base->type, wg_decode_blob(db, enc), sizeof(uuid_t));
+
+        enc = wg_get_field(db, record, hobodb_base_field_uuid);
+        assert(WG_BLOBTYPE == wg_get_encoded_type(db, enc));
+        assert(sizeof(uuid_t) == wg_decode_blob_len(db, enc));
+        memcpy(&base->uuid, wg_decode_blob(db, enc), sizeof(uuid_t));
+
+        enc = wg_get_field(db, record, hobodb_base_field_ctime);
+        assert(WG_INTTYPE == wg_get_encoded_type(db, enc));
+        base->ctime = wg_decode_int(db, enc);
+
+        enc = wg_get_field(db, record, hobodb_base_field_atime);
+        assert(WG_INTTYPE == wg_get_encoded_type(db, enc));
+        base->atime = wg_decode_int(db, enc);
+
+        enc = wg_get_field(db, record, hobodb_base_field_uri);
+        assert(WG_URITYPE == wg_get_encoded_type(db, enc));
+        length = wg_decode_uri_len(db, enc);
+        base->uri.name = malloc(length + sizeof(char));
+        wg_decode_uri_copy(db, enc, base->uri.name, length + sizeof(char));
+        length = wg_decode_uri_prefix_len(db, enc);
+        if (length > 0) {
+            base->uri.prefix = malloc(length + sizeof(char));
+            wg_decode_uri_copy(db, enc, base->uri.name, length + sizeof(char));
+        }
+        else {
+            base->uri.prefix = NULL;
+        }
+
+        assert(0 != wg_end_read(db, lock_id)); // unlock failure is catastrophic
+    }
+
+    return 0;
 }
 
 hobodb_base_t *hobodb_alloc_base(void)
