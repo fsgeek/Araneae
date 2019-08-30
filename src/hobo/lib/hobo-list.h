@@ -82,7 +82,7 @@ FORCEDINLINE list_entry_t *remove_list_head(list_entry_t *list)
     return entry;
 }
 
-FORCEDINLINE list_entry_t *remove_tail_list(list_entry_t *list)
+FORCEDINLINE list_entry_t *remove_list_tail(list_entry_t *list)
 {
     list_entry_t *entry = list->prev;
     remove_list_entry(entry);

@@ -9,6 +9,15 @@
 
 #include "hobodb.h"
 
+#if !defined(offset_of)
+#define offset_of(type, field) (unsigned long)&(((type *)0)->field)
+#endif // offset_of
+
+#if !defined(container_of)
+#define container_of(ptr, type, member) ((type *)(((char *)ptr) - offset_of(type, member)))
+#endif // container_of
+
+
 const int hobodb_base_field_type = 0;
 const int hobodb_base_field_uuid = 1;
 const int hobodb_base_field_ctime = 2;
@@ -206,7 +215,7 @@ hobodb_base_t *hobodb_alloc_base(void)
     return newbase;
 }
 
-void hobodb_free_base(hobodb_base_t *base)
+static void hobodb_cleanup_base(hobodb_base_t *base)
 {
     if (NULL != base) {
         if (base->uri.name) {
@@ -217,6 +226,14 @@ void hobodb_free_base(hobodb_base_t *base)
             free(base->uri.prefix);
             base->uri.prefix = NULL;
         }
+    }
+
+}
+
+void hobodb_free_base(hobodb_base_t *base)
+{
+    if (NULL != base) {
+        hobodb_cleanup_base(base);
         free(base);
         base = NULL;
     }
@@ -375,6 +392,48 @@ int hobodb_relationship_decode(void *db, void *record, hobodb_relationship_t *re
 
 }
 
+
+static void init_relationship(hobodb_relationship_t *newrel)
+{
+    assert(NULL != newrel);
+    memset(newrel, 0, sizeof(hobodb_relationship_t));
+
+    init_base((hobodb_base_t *)newrel);
+    record_type_to_uuid("relationship", newrel->type); // override
+    uuid_clear(newrel->object1);
+    uuid_clear(newrel->object2);
+    uuid_clear(newrel->relationship);
+    uuid_clear(newrel->properties);
+    uuid_clear(newrel->attributes);
+    uuid_clear(newrel->labels);
+
+}
+
+hobodb_relationship_t *hobodb_alloc_relationship(void)
+{
+    hobodb_relationship_t *newrel = (hobodb_relationship_t *)malloc(sizeof(hobodb_relationship_t));
+
+    while (NULL != newrel) {
+        memset(newrel, 0, sizeof(hobodb_relationship_t));
+        init_relationship(newrel);
+    }
+
+    return newrel;
+}
+
+
+
+void hobodb_free_relationship(hobodb_relationship_t *relationship)
+{
+    if (NULL != relationship) {
+        hobodb_cleanup_base((hobodb_base_t *)relationship);
+        free(relationship);
+        relationship = NULL;
+    }
+}
+
+
+
 int hobodb_properties_encode(void *db, hobodb_properties_t *properties, void **record)
 {
     (void) db;
@@ -481,3 +540,128 @@ static void record_type_to_uuid(const char *type, uuid_t uuid)
     }
     return;
 }
+
+typedef struct _hobo_relationship_type {
+    list_entry_t list_entry;
+    uuid_t relationship_uuid;
+    const char *relationship_name;
+} hobo_relationship_type_t;
+
+static list_entry_t relationships_list = {&relationships_list, &relationships_list};
+static pthread_rwlock_t relationship_type_lock = PTHREAD_RWLOCK_INITIALIZER;
+
+static void lock_table_for_lookup(void)
+{
+    pthread_rwlock_rdlock(&relationship_type_lock);
+}
+
+static void lock_table_for_change(void)
+{
+    pthread_rwlock_wrlock(&relationship_type_lock);
+}
+
+static void unlock_table(void)
+{
+    pthread_rwlock_unlock(&relationship_type_lock);
+}
+
+
+// This routine is used to search the list - caller should hold the lock
+static void lookup_relationship_by_name_unlocked(const char *relationship_name, uuid_t *relationship_uuid)
+{
+    hobo_relationship_type_t *rel;
+    list_entry_t *le;
+
+    assert(NULL != relationship_name);
+    assert(strlen(relationship_name) > 0);
+    assert(NULL != relationship_uuid);
+
+
+    list_for_each(&relationships_list, le) {
+        rel = container_of(le, hobo_relationship_type_t, list_entry);
+        assert(NULL != rel->relationship_name);
+        assert(!uuid_is_null(rel->relationship_uuid));
+        if (0 == strcasecmp(relationship_name, rel->relationship_name)) {
+            uuid_copy(*relationship_uuid, rel->relationship_uuid);
+            return;
+        }
+    }
+
+    // not found
+    uuid_clear(*relationship_uuid);
+}
+
+// this routine is used to search the list - caller should hold the lock
+static void lookup_relationship_by_uuid_unlocked(uuid_t relationship_uuid, char **relationship_name)
+{
+    hobo_relationship_type_t *rel;
+    list_entry_t *le;
+
+    assert(!uuid_is_null(relationship_uuid));
+    assert(NULL != relationship_name);
+    assert(NULL == *relationship_name); // caller shouldn't send a valid buffer
+
+    list_for_each(&relationships_list, le) {
+        rel = container_of(le, hobo_relationship_type_t, list_entry);
+        assert(NULL != rel->relationship_name);
+        assert(!uuid_is_null(rel->relationship_uuid));
+        if (0 == uuid_compare(relationship_uuid, rel->relationship_uuid)) {
+            *relationship_name = strdup(rel->relationship_name);
+            return;
+        }
+    }
+
+    *relationship_name = NULL; // not found
+    return;
+}
+
+
+static void register_relationship_unlocked(hobo_relationship_type_t *new_relationship)
+{
+    assert(NULL != new_relationship);
+    assert(NULL != new_relationship->relationship_name);
+    assert(strlen(new_relationship->relationship_name) > 0);
+    insert_list_tail(&relationships_list, &new_relationship->list_entry);
+}
+
+void hobo_lookup_relationship_by_name(const char *relationship_name, uuid_t *relationship_uuid)
+{
+    lock_table_for_lookup();
+    lookup_relationship_by_name_unlocked(relationship_name, relationship_uuid);
+    unlock_table();
+}
+
+void hobo_lookup_relationship_by_uuid(uuid_t relationship_uuid, char **relationship_name)
+{
+    lock_table_for_change();
+    lookup_relationship_by_uuid_unlocked(relationship_uuid, relationship_name);
+    unlock_table();
+}
+
+void hobo_register_relationship(uuid_t relationship_uuid, const char *relationship_name)
+{
+    uuid_t test_uuid;
+    char *test_name = NULL;
+    hobo_relationship_type_t *reltype = NULL;
+
+    assert(!uuid_is_null(relationship_uuid));
+    assert(NULL != relationship_name);
+    assert(strlen(relationship_name) > 0);
+
+    reltype = malloc(sizeof(hobo_relationship_type_t));
+    assert(NULL != reltype);
+    uuid_copy(reltype->relationship_uuid, relationship_uuid);
+    reltype->relationship_name = strdup(relationship_name);
+
+    lock_table_for_lookup();
+    lookup_relationship_by_name_unlocked(relationship_name, &test_uuid);
+    assert(uuid_is_null(test_uuid));
+    lookup_relationship_by_uuid_unlocked(relationship_uuid, &test_name);
+    assert(NULL == test_name);
+    unlock_table();
+
+    lock_table_for_change();
+    register_relationship_unlocked(reltype);
+    unlock_table();
+}
+

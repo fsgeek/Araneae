@@ -79,19 +79,30 @@ int hobodb_update_base(void *db, hobodb_base_t *base);
 
 int hobodb_relationship_encode(void *db, hobodb_relationship_t *relationship, void **record);
 int hobodb_relationship_decode(void *db, void *record, hobodb_relationship_t *relationship);
-int hobodb_allocate_relationship(void *db, hobodb_relationship_t **relationship);
-int hobodb_free_relationship(void *db, hobodb_relationship_t *relationship);
+hobodb_relationship_t *hobodb_alloc_relationship(void);
+void hobodb_free_relationship(hobodb_relationship_t *relationship);
 
 int hobodb_properties_encode(void *db, hobodb_properties_t *properties, void **record);
 int hobodb_properties_decode(void *db, void *record, hobodb_properties_t *properties);
+hobodb_properties_t *hobodb_alloc_properties(unsigned count);
+void hobodb_free_properties(void *properties);
+
 
 int hobodb_attributes_encode(void *db, hobodb_attributes_t *attributes, void **record);
 int hobodb_attributes_decode(void *db, void *record, hobodb_attributes_t *attributes);
+hobodb_attributes_t *hobodb_alloc_attributes(unsigned count);
+void hobodb_free_attributes(hobodb_attributes_t *attributes);
+
 
 int hobodb_labels_encode(void *db, hobodb_label_t *labels, void **record);
 int hobodb_labels_decode(void *db, void *record, hobodb_label_t *labels);
+hobodb_label_t *hobodb_alloc_label(unsigned count);
+void hobodb_free_label(hobodb_label_t *labels);
 
 void *hobodb_lookup_object(void *db, uuid_t uuid);
 
+void hobo_register_relationship(uuid_t relationship_uuid, const char *relationship_name);
+void hobo_lookup_relationship_by_name(const char *relationship_name, uuid_t *relationship_uuid);
+void hobo_lookup_relationship_by_uuid(uuid_t relationship_uuid, char **relationship_name);
 
 #endif // __HOBODB_H__

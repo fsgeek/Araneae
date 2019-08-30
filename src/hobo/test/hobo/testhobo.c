@@ -219,6 +219,55 @@ static void hobodb_base_t *create_object(void *db, uuid_t object_uuid, hobodb_ob
 }
 #endif // 0
 
+static hobodb_base_t *create_base_object(void *db, const char *prefix, const char *name)
+{
+    hobodb_base_t *object = NULL;
+    void *record = NULL;
+
+    object = hobodb_alloc_base();
+    munit_assert(NULL != object);
+
+    object->ctime = time(NULL);
+    object->atime = object->ctime;
+    if (NULL != prefix) {
+        object->uri.prefix = strdup(prefix);
+    } else {
+        object->uri.prefix = NULL;
+    }
+    object->uri.name = strdup(name);
+
+    // encode
+    munit_assert(0 == hobodb_base_encode(db, object, &record));
+    munit_assert(NULL != record);
+    munit_assert(object->record == record);
+
+    return object;
+}
+
+static hobodb_relationship_t *create_relationship_object(hobodb_base_t *object1, hobodb_base_t *object2, const uuid_t relationship_uuid)
+{
+    hobodb_relationship_t *object = NULL;
+
+    assert(NULL != object1);
+    assert(NULL != object2);
+    assert(!uuid_is_null(relationship_uuid));
+
+    object = hobodb_alloc_relationship();
+
+    while (NULL != object) {
+        uuid_copy(object->object1, object1->uuid);
+        uuid_copy(object->object2, object2->uuid);
+        uuid_copy(object->relationship, relationship_uuid);
+        uuid_clear(object->properties);
+        uuid_clear(object->attributes);
+        uuid_clear(object->labels);
+
+        break;
+    }
+    return object;
+}
+
+
 static MunitResult
 test_db_relationship(
     const MunitParameter params[] __notused,
@@ -229,25 +278,29 @@ test_db_relationship(
     hobodb_base_t *base;
     void *record = NULL;
     uuid_t uuid;
+    hobodb_base_t *object1 = NULL;
+    hobodb_base_t *object2 = NULL;
+    hobodb_relationship_t *relationship = NULL;
+    uuid_t relationship_uuid;
 
     db = open_hobodb();
     munit_assert(NULL != db);
 
-    base = hobodb_alloc_base();
-    munit_assert(NULL != base);
+    // create a pair of objects
+    object1 = create_base_object(db, "file", "foo");
+    munit_assert(NULL != object1);
+    object2 = create_base_object(db, "file", "bar");
+    munit_assert(NULL != object2);
 
-    // need to set values
-    base->ctime = time(NULL);
-    base->uri.prefix = strdup("file");
-    base->uri.name = strdup("/mnt/hobo");
-    base->atime = time(NULL);
+    // now create a relationship between them
+    // TODO: need to pre-define common relationship types
+    //       Also, probably need a way to permanently define these, in order to permit "portability"
+    //       obvious answer: create an object, using this as the uuid, then associate a property with it.
+    uuid_generate(relationship_uuid); 
+    relationship = create_relationship_object(object1, object2, relationship_uuid);
+    munit_assert(NULL != relationship);
 
-    // now encode
-    munit_assert(0 == hobodb_base_encode(db, base, &record));
-    munit_assert(NULL != record);
-    munit_assert(base->record == record);
-    uuid_copy(uuid, base->uuid);
-    hobodb_free_base(base);
+
 
     //
     // let's look up the record we just created
