@@ -53,4 +53,7 @@ this likely becomes a function of the _type_ of the record.
 WhiteDB requires functions to "encode" and "decode" these structures.  Thus, I'm thinking the logical way to lay this out is to have a common header (for all database objects) and then a specialized portion
 (for the specific type of object).  Again, I'm going to have to play with this to see what "makes sense".
 
+Note: I have confirmed that I cannot search on a binary UUID; either the underlying database needs to be modified to support them or I need to convert them to strings.  Since I doubt I'll be using this
+database package in the long run, I'm going to just encode them as string encodings for the time being.
+
 Last Update: August 28, 2019.

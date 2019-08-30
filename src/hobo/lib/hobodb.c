@@ -31,6 +31,50 @@ const int hobodb_relationship_field_max = 11;
 static void record_type_to_uuid(const char *type, uuid_t uuid);
 
 
+// helper function
+static wg_int encode_uuid_as_string(void *db, uuid_t uuid)
+{
+    char uuid_string[40];
+    wg_int enc;
+
+    assert(NULL != db);
+    assert(!uuid_is_null(uuid)); // don't use the NULL uuid
+
+    uuid_unparse_lower(uuid, uuid_string);
+
+    enc = wg_encode_str(db, uuid_string, NULL);
+    assert(WG_ILLEGAL != enc);
+
+    return enc;    
+}
+
+static void decode_uuid_from_string(void *db, wg_int enc, uuid_t uuid)
+{
+    char *uuid_string = NULL;
+
+    uuid_string = (char *)malloc(40); // enough space for the UUID as a string
+
+    while (NULL != uuid_string) {
+        assert(wg_decode_str_copy(db, enc, uuid_string, 40) >= 0);
+        break;
+    }
+
+    assert(36 == strlen(uuid_string));
+    assert(0 == uuid_parse(uuid_string, uuid));
+}
+
+
+static void init_base(hobodb_base_t *base) 
+{
+    record_type_to_uuid("base", base->type);
+    uuid_generate(base->uuid);
+    assert(!uuid_is_null(base->uuid));
+
+    base->ctime = time(NULL);
+    base->atime = time(NULL);
+}
+
+
 int hobodb_base_encode(void *db, hobodb_base_t *base, void **record)
 {
     void *rec;
@@ -63,26 +107,14 @@ int hobodb_base_encode(void *db, hobodb_base_t *base, void **record)
             assert(WG_ILLEGAL != enc);
             assert(wg_set_field(db, rec, hobodb_base_field_type, enc) >= 0);
             
-            // store uuid of this record
-            enc = wg_encode_blob(db, (char *)base->uuid, uuid_type, (wg_int)sizeof(uuid_t));
+            // store uuid of this record as a string, so we can search on it
+            enc = encode_uuid_as_string(db, base->uuid);
             assert(WG_ILLEGAL != enc);
             assert(wg_set_field(db, rec, hobodb_base_field_uuid, enc) >= 0);
 
-            // TODO: should we store these as database timestamps?
-            // store ctime of this record
-            enc = wg_encode_int(db, base->ctime);
-            assert(WG_ILLEGAL != enc);
-            assert(wg_set_field(db, rec, hobodb_base_field_ctime, enc) >= 0);
-
-            enc = wg_encode_int(db, base->atime);
-            assert(WG_ILLEGAL != enc);
-            assert(wg_set_field(db, rec, hobodb_base_field_atime, enc) >= 0);
-
-            enc = wg_encode_uri(db, base->uri.name, base->uri.prefix);
-            assert(WG_ILLEGAL != enc);
-            assert(wg_set_field(db, rec, hobodb_base_field_uri, enc) >= 0);
-            
             assert(0 != wg_end_write(db, lock_id)); // unlock failure is catastrophic
+
+            hobodb_update_base(db, base);
 
             // Done
             break;
@@ -124,9 +156,8 @@ int hobodb_base_decode(void *db, void *record, hobodb_base_t *base)
         memcpy(&base->type, wg_decode_blob(db, enc), sizeof(uuid_t));
 
         enc = wg_get_field(db, record, hobodb_base_field_uuid);
-        assert(WG_BLOBTYPE == wg_get_encoded_type(db, enc));
-        assert(sizeof(uuid_t) == wg_decode_blob_len(db, enc));
-        memcpy(&base->uuid, wg_decode_blob(db, enc), sizeof(uuid_t));
+        assert(WG_STRTYPE == wg_get_encoded_type(db, enc));
+        decode_uuid_from_string(db, enc, base->uuid);
 
         enc = wg_get_field(db, record, hobodb_base_field_ctime);
         assert(WG_INTTYPE == wg_get_encoded_type(db, enc));
@@ -144,7 +175,7 @@ int hobodb_base_decode(void *db, void *record, hobodb_base_t *base)
         length = wg_decode_uri_prefix_len(db, enc);
         if (length > 0) {
             base->uri.prefix = malloc(length + sizeof(char));
-            wg_decode_uri_copy(db, enc, base->uri.name, length + sizeof(char));
+            wg_decode_uri_prefix_copy(db, enc, base->uri.prefix, length + sizeof(char));
         }
         else {
             base->uri.prefix = NULL;
@@ -159,16 +190,6 @@ int hobodb_base_decode(void *db, void *record, hobodb_base_t *base)
     return 0;
 }
 
-
-static void init_base(hobodb_base_t *base) 
-{
-    record_type_to_uuid("base", base->type);
-    uuid_generate(base->uuid);
-    assert(!uuid_is_null(base->uuid));
-
-    base->ctime = time(NULL);
-    base->atime = time(NULL);
-}
 
 hobodb_base_t *hobodb_alloc_base(void)
 {
@@ -412,6 +433,21 @@ int hobodb_labels_decode(void *db, void *record, hobodb_label_t *labels)
     (void) record;
     return ENOTSUP;
 }
+
+void *hobodb_lookup_object(void *db, uuid_t uuid)
+{
+    void *rec = NULL;
+    char uuid_string[40];
+    assert(NULL != db);
+    assert(!uuid_is_null(uuid));
+
+    uuid_unparse_lower(uuid, uuid_string);
+    rec = wg_find_record_str(db, hobodb_base_field_uuid, WG_COND_EQUAL, uuid_string, NULL);
+    return rec;
+}
+
+
+
 /*
     hobodb_base_object_type = 100,
     hobdb_relationship_object_type = 200,

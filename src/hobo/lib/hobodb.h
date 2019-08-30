@@ -91,7 +91,7 @@ int hobodb_attributes_decode(void *db, void *record, hobodb_attributes_t *attrib
 int hobodb_labels_encode(void *db, hobodb_label_t *labels, void **record);
 int hobodb_labels_decode(void *db, void *record, hobodb_label_t *labels);
 
-int hobodb_lookup_object(void *db, uuid_t uuid);
+void *hobodb_lookup_object(void *db, uuid_t uuid);
 
 
 #endif // __HOBODB_H__
