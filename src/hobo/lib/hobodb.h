@@ -37,12 +37,12 @@ typedef struct {
 
 typedef struct {
     hobodb_base_t;
-    uuid_t object1; // first object of the relationship
-    uuid_t object2; // second object of the relationship
-    uuid_t relationship; // this is the relationship type
-    uuid_t properties; // any properties of this specific relationship
-    uuid_t attributes; // any attributes of this specific relationship
-    uuid_t labels; // any labels of this specpfic relationship
+    uuid_t object1; // first object of the relationship - immutable
+    uuid_t object2; // second object of the relationship - immutable
+    uuid_t relationship; // this is the relationship type - immutable
+    uuid_t properties; // any properties of this specific relationship - mutable
+    uuid_t attributes; // any attributes of this specific relationship - mutable
+    uuid_t labels; // any labels of this specpfic relationship - mutable
 } hobodb_relationship_t;
 
 
@@ -69,16 +69,16 @@ typedef struct {
 
 
 // This API is in flux... 28 August 2019 (WAM)
-int hobodb_base_encode(void *db, hobodb_base_t *base, void **record); // might want to hide this
-int hobodb_base_decode(void *db, void *record, hobodb_base_t *base); // might want to hide this
+int hobodb_base_encode(void *db, hobodb_base_t *base); // might want to hide this
+int hobodb_base_decode(void *db, hobodb_base_t *base); // might want to hide this
 hobodb_base_t *hobodb_alloc_base(void);
 void hobodb_free_base(hobodb_base_t *base);
 hobodb_base_t *hobodb_lookup_base(void *db, uuid_t uuid);
 int hobodb_update_base(void *db, hobodb_base_t *base);
 
 
-int hobodb_relationship_encode(void *db, hobodb_relationship_t *relationship, void **record);
-int hobodb_relationship_decode(void *db, void *record, hobodb_relationship_t *relationship);
+int hobodb_relationship_encode(void *db, hobodb_relationship_t *relationship);
+int hobodb_relationship_decode(void *db, hobodb_relationship_t *relationship);
 hobodb_relationship_t *hobodb_alloc_relationship(void);
 void hobodb_free_relationship(hobodb_relationship_t *relationship);
 

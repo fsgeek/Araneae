@@ -115,9 +115,8 @@ test_db_base(
     base->atime = time(NULL);
 
     // now encode
-    munit_assert(0 == hobodb_base_encode(db, base, &record));
-    munit_assert(NULL != record);
-    munit_assert(base->record == record);
+    munit_assert(0 == hobodb_base_encode(db, base));
+    munit_assert(NULL != base->record);
     uuid_copy(uuid, base->uuid);
     hobodb_free_base(base);
 
@@ -129,8 +128,10 @@ test_db_base(
 
     base = hobodb_alloc_base();
     munit_assert(NULL != base);
+    munit_assert(NULL == base->record);
+    base->record = record;
 
-    munit_assert(0 == hobodb_base_decode(db, record, base));
+    munit_assert(0 == hobodb_base_decode(db, base));
 
     munit_assert(0 == strcmp("file", base->uri.prefix));
     munit_assert(0 == strcmp("/mnt/hobo", base->uri.name));
@@ -222,7 +223,6 @@ static void hobodb_base_t *create_object(void *db, uuid_t object_uuid, hobodb_ob
 static hobodb_base_t *create_base_object(void *db, const char *prefix, const char *name)
 {
     hobodb_base_t *object = NULL;
-    void *record = NULL;
 
     object = hobodb_alloc_base();
     munit_assert(NULL != object);
@@ -237,9 +237,8 @@ static hobodb_base_t *create_base_object(void *db, const char *prefix, const cha
     object->uri.name = strdup(name);
 
     // encode
-    munit_assert(0 == hobodb_base_encode(db, object, &record));
-    munit_assert(NULL != record);
-    munit_assert(object->record == record);
+    munit_assert(0 == hobodb_base_encode(db, object));
+    munit_assert(NULL != object->record);
 
     return object;
 }
@@ -277,7 +276,6 @@ test_db_relationship(
     void *db;
     hobodb_base_t *base;
     void *record = NULL;
-    uuid_t uuid;
     hobodb_base_t *object1 = NULL;
     hobodb_base_t *object2 = NULL;
     hobodb_relationship_t *relationship = NULL;
@@ -300,12 +298,16 @@ test_db_relationship(
     relationship = create_relationship_object(object1, object2, relationship_uuid);
     munit_assert(NULL != relationship);
 
+    //
+    // Now we need to encode this
+    //
+    munit_assert(0 == hobodb_relationship_encode(db, relationship));
 
 
     //
     // let's look up the record we just created
     //
-    record = hobodb_lookup_object(db, uuid);
+    record = hobodb_lookup_object(db, relationship->uuid);
     munit_assert(NULL != record);
 
     //
@@ -313,8 +315,9 @@ test_db_relationship(
     //
     base = hobodb_alloc_base();
     munit_assert(NULL != base);
+    base->record = record;
 
-    munit_assert(0 == hobodb_base_decode(db, record, base));
+    munit_assert(0 == hobodb_base_decode(db, base));
 
     close_hobodb(db);
     return MUNIT_OK;

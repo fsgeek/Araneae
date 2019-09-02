@@ -17,6 +17,10 @@
 #define container_of(ptr, type, member) ((type *)(((char *)ptr) - offset_of(type, member)))
 #endif // container_of
 
+#if !defined(TRUE)
+#define TRUE (1)
+#endif // TRUE
+
 
 const int hobodb_base_field_type = 0;
 const int hobodb_base_field_uuid = 1;
@@ -83,22 +87,95 @@ static void init_base(hobodb_base_t *base)
     base->atime = time(NULL);
 }
 
-
-int hobodb_base_encode(void *db, hobodb_base_t *base, void **record)
+//
+// This encodes the base fields; if it is the initial pass,
+// we will set the type and uuid.  Once set, we treat those as
+// invariant.
+//
+static int generic_base_encode(void *db, hobodb_base_t *base, int initial)
 {
-    void *rec;
-    wg_int enc;
     wg_int lock_id;
+    wg_int enc_type;
+    wg_int enc_uuid;
+    wg_int enc_ctime;
+    wg_int enc_atime;
+    wg_int enc_uri;
+    int encoded = 0;
+    char uuid_type[8];
+
+    assert(NULL != db);
+    assert(NULL != base);
+    assert(NULL != base->record);
+
+    assert(wg_get_record_len(db, base->record) >= hobodb_base_field_max);
+
+    if (initial) {
+        // must be null
+        assert(0 == wg_get_field(db, base->record, hobodb_base_field_type));
+        assert(0 == wg_get_field(db, base->record, hobodb_base_field_uuid));
+
+        record_type_to_uuid("base", base->type);
+        assert(!uuid_is_null(base->type));
+
+        uuid_type[sizeof(uuid_type)-1] = '\0';
+        strncpy(uuid_type, "uuid", sizeof(uuid_type)-1);
+        enc_type = wg_encode_blob(db, (char *)base->type, uuid_type, (wg_int)sizeof(uuid_t));
+        assert(WG_ILLEGAL != enc_type);
+
+        enc_uuid = encode_uuid_as_string(db, base->uuid);
+        assert(WG_ILLEGAL != enc_uuid);
+
+    }
+    else {
+        // MUST not be NULL - and must be correct type(s)
+        assert(WG_BLOBTYPE == wg_get_field(db, base->record, hobodb_base_field_type));
+        assert(WG_STRTYPE == wg_get_field(db, base->record, hobodb_base_field_uuid));
+    } 
+
+    enc_ctime = wg_encode_int(db, base->ctime);
+    assert(WG_ILLEGAL != enc_ctime);
+
+    enc_atime = wg_encode_int(db, base->atime);
+    assert(WG_ILLEGAL != enc_atime);
+
+    if (NULL != base->uri.name) {
+        enc_uri = wg_encode_uri(db, base->uri.name, base->uri.prefix);
+        assert(WG_ILLEGAL != enc_uri);
+    }
+
+    // Update under lock
+    lock_id = wg_start_write(db);
+    while (0 != lock_id) {
+        if (initial) {
+            // only write for initial creation
+            assert(wg_set_field(db, base->record, hobodb_base_field_type, enc_type) >= 0);
+            assert(wg_set_field(db, base->record, hobodb_base_field_uuid, enc_uuid) >= 0);
+        }
+        assert(wg_set_field(db, base->record, hobodb_base_field_ctime, enc_ctime) >= 0);
+        assert(wg_set_field(db, base->record, hobodb_base_field_atime, enc_atime) >= 0);
+        if (NULL != base->uri.name) {
+            assert(wg_set_field(db, base->record, hobodb_base_field_uri, enc_uri) >= 0);
+        }
+        assert(0 != wg_end_write(db, lock_id)); // unlock failure is catastrophic
+        encoded = 1;
+        break;
+    }
+
+    assert(encoded);
+    return 0;
+}
+
+
+int hobodb_base_encode(void *db, hobodb_base_t *base)
+{
     uuid_t base_type_uuid;
     char uuid_type[16];
-   
+    int initial = 0;
     
     record_type_to_uuid("base", base_type_uuid);
     assert(!uuid_is_null(base_type_uuid));
     assert(NULL != base);
     assert(0 == uuid_compare(base_type_uuid, base->type));
-    assert(NULL != record); // not valid
-    assert(NULL == *record); // shouldn't be passing it in, right?
     memset(uuid_type, 0, sizeof(uuid_type));
     strncpy(uuid_type, "uuid", sizeof(uuid_type)-1);
 
@@ -107,94 +184,96 @@ int hobodb_base_encode(void *db, hobodb_base_t *base, void **record)
         if (NULL == base->record) {
             return -ENOMEM;
         }
-        rec = base->record;
 
-        lock_id = wg_start_write(db);
-        while (0 != lock_id) {
-            // store type field
-            enc = wg_encode_blob(db, (char *)base->type, uuid_type, (wg_int)sizeof(uuid_t));
-            assert(WG_ILLEGAL != enc);
-            assert(wg_set_field(db, rec, hobodb_base_field_type, enc) >= 0);
-            
-            // store uuid of this record as a string, so we can search on it
-            enc = encode_uuid_as_string(db, base->uuid);
-            assert(WG_ILLEGAL != enc);
-            assert(wg_set_field(db, rec, hobodb_base_field_uuid, enc) >= 0);
-
-            assert(0 != wg_end_write(db, lock_id)); // unlock failure is catastrophic
-
-            hobodb_update_base(db, base);
-
-            // Done
-            break;
-        }
+        initial = TRUE;
     }
-
-    if (NULL != base) {
-        if (NULL != record) {
-            *record = base->record;
-        }
-    }
+    generic_base_encode(db, base, initial);
 
     return 0;
 }
 
-int hobodb_base_decode(void *db, void *record, hobodb_base_t *base)
+//
+// generic_base_decode: works on decoding the base portion of the object
+// _without_ insisting it has to be an object of a specific type (leave
+// that check to the caller!)
+//
+static int generic_base_decode(void *db, hobodb_base_t *base)
 {
-    uuid_t base_type_uuid;
-    wg_int length;
     wg_int lock_id;
-    wg_int enc;
+    wg_int enc_type;
+    wg_int enc_uuid;
+    wg_int enc_ctime;
+    wg_int enc_atime;
+    wg_int enc_uri;
+    int decoded = 0;
+    wg_int length;
 
-    assert(NULL != db);
     assert(NULL != base);
-    assert(NULL != record);
-    assert(NULL == base->record); // assume we aren't replacing the record - if we are, more code to write!
+    assert(NULL != base->record);
 
-    record_type_to_uuid("base", base_type_uuid);
-    assert(!uuid_is_null(base_type_uuid));
+    assert(wg_get_record_len(db, base->record) >= hobodb_base_field_max);
 
     lock_id = wg_start_read(db);
     while (0 != lock_id) {
-        length = wg_get_record_len(db, record);
-        assert(length >= hobodb_base_field_max);
+        enc_type = wg_get_field(db, base->record, hobodb_base_field_type);
+        enc_uuid = wg_get_field(db, base->record, hobodb_base_field_uuid);
+        enc_ctime = wg_get_field(db, base->record, hobodb_base_field_ctime);
+        enc_atime = wg_get_field(db, base->record, hobodb_base_field_atime);
+        enc_uri = wg_get_field(db, base->record, hobodb_base_field_uri);
+        decoded = 1;
+        assert(0 != wg_end_read(db, lock_id)); // unlock failure is catastrophic
+        break;
+    }
+    assert(decoded); // this implies a lock failure, which is catastrophic for now
 
-        enc = wg_get_field(db, record, hobodb_base_field_type);
-        assert(WG_BLOBTYPE == wg_get_encoded_type(db, enc));
-        assert(sizeof(uuid_t) == wg_decode_blob_len(db, enc));
-        memcpy(&base->type, wg_decode_blob(db, enc), sizeof(uuid_t));
+    assert(WG_BLOBTYPE == wg_get_encoded_type(db, enc_type));
+    assert(sizeof(uuid_t) == wg_decode_blob_len(db, enc_type));
+    memcpy(&base->type, wg_decode_blob(db, enc_type), sizeof(uuid_t));
+    
+    assert(WG_STRTYPE == wg_get_encoded_type(db, enc_uuid));
+    decode_uuid_from_string(db, enc_uuid, base->uuid);
 
-        enc = wg_get_field(db, record, hobodb_base_field_uuid);
-        assert(WG_STRTYPE == wg_get_encoded_type(db, enc));
-        decode_uuid_from_string(db, enc, base->uuid);
+    assert(WG_INTTYPE == wg_get_encoded_type(db, enc_ctime));
+    base->ctime = wg_decode_int(db, enc_ctime);
 
-        enc = wg_get_field(db, record, hobodb_base_field_ctime);
-        assert(WG_INTTYPE == wg_get_encoded_type(db, enc));
-        base->ctime = wg_decode_int(db, enc);
+    assert(WG_INTTYPE == wg_get_encoded_type(db, enc_atime));
+    base->atime = wg_decode_int(db, enc_atime);
 
-        enc = wg_get_field(db, record, hobodb_base_field_atime);
-        assert(WG_INTTYPE == wg_get_encoded_type(db, enc));
-        base->atime = wg_decode_int(db, enc);
-
-        enc = wg_get_field(db, record, hobodb_base_field_uri);
-        assert(WG_URITYPE == wg_get_encoded_type(db, enc));
-        length = wg_decode_uri_len(db, enc);
-        base->uri.name = malloc(length + sizeof(char));
-        wg_decode_uri_copy(db, enc, base->uri.name, length + sizeof(char));
-        length = wg_decode_uri_prefix_len(db, enc);
+    if (0 == enc_uri) { // no URI
+        base->uri.name = NULL;
+        base->uri.prefix  = NULL;
+    }
+    else {
+        assert(WG_URITYPE == wg_get_encoded_type(db, enc_uri));
+        length = wg_decode_uri_len(db, enc_uri) + sizeof(char);
+        assert(length > sizeof(char)); // no empty strings allowed
+        base->uri.name = malloc(length);
+        wg_decode_uri_copy(db, enc_uri, base->uri.name, length);
+        length = wg_decode_uri_prefix_len(db, enc_uri) + sizeof(char);
         if (length > 0) {
-            base->uri.prefix = malloc(length + sizeof(char));
-            wg_decode_uri_prefix_copy(db, enc, base->uri.prefix, length + sizeof(char));
+            base->uri.prefix = malloc(length);
+            wg_decode_uri_prefix_copy(db, enc_uri, base->uri.prefix, length);
         }
         else {
             base->uri.prefix = NULL;
         }
-
-        assert(0 != wg_end_read(db, lock_id)); // unlock failure is catastrophic
-
-        // done
-        break;
     }
+    return 0;
+
+}
+
+int hobodb_base_decode(void *db, hobodb_base_t *base)
+{
+    uuid_t base_type_uuid;
+
+    assert(NULL != db);
+    assert(NULL != base);
+    assert(NULL != base->record); // we can't decode without a record
+
+    record_type_to_uuid("base", base_type_uuid);
+    assert(!uuid_is_null(base_type_uuid));
+
+    assert(0 == generic_base_decode(db, base));
 
     return 0;
 }
@@ -304,10 +383,106 @@ int hobodb_update_base(void *db, hobodb_base_t *base)
 }
 
 
-// TODO: make this static, remove this declaration
-int hobodb_update_relationship(void *db, hobodb_relationship_t *relationship);
+//
+// This encodes the base fields; if it is the initial pass,
+// we will set the type and uuid.  Once set, we treat those as
+// invariant.
+//
+static int generic_relationship_encode(void *db, hobodb_relationship_t *relationship, int initial)
+{
+    wg_int enc_type;
+    wg_int enc_uuid;
+    wg_int enc_object1 = 0;
+    wg_int enc_object2 = 0;
+    wg_int enc_relationship = 0;
+    wg_int enc_properties = 0;
+    wg_int enc_attributes = 0;
+    wg_int enc_labels = 0;
+    wg_int lock_id = 0;
+    int encoded = 0;
+    char uuid_type[16];
 
-int hobodb_update_relationship(void *db, hobodb_relationship_t *relationship)
+    assert(NULL != db);
+    assert(NULL != relationship);
+    assert(NULL != relationship->record);
+
+    assert(wg_get_record_len(db, relationship->record) >= hobodb_relationship_field_max);
+
+    if (initial) {
+        //
+        // This is where we set up the immutable fields - once written, we don't change
+        // them
+        //
+        assert(0 == wg_get_field(db, relationship->record, hobodb_base_field_type));
+        assert(0 == wg_get_field(db, relationship->record, hobodb_base_field_uuid));
+        assert(0 == wg_get_field(db, relationship->record, hobodb_relationship_field_object1));
+        assert(0 == wg_get_field(db, relationship->record, hobodb_relationship_field_object2));
+        assert(0 == wg_get_field(db, relationship->record, hobodb_relationship_field_relationship));
+
+        record_type_to_uuid("relationship", relationship->type);
+        assert(!uuid_is_null(relationship->type));
+
+        uuid_type[sizeof(uuid_type)-1] = '\0';
+        strncpy(uuid_type, "uuid", sizeof(uuid_type)-1);
+        enc_type = wg_encode_blob(db, (char *)relationship->type, uuid_type, (wg_int)sizeof(uuid_t));
+        assert(WG_ILLEGAL != enc_type);
+
+        enc_uuid = encode_uuid_as_string(db, relationship->uuid);
+        assert(WG_ILLEGAL != enc_uuid);
+
+        enc_object1 = encode_uuid_as_string(db, relationship->object1);
+        assert(WG_ILLEGAL != enc_object1);
+
+        enc_object2 = encode_uuid_as_string(db, relationship->object2);
+        assert(WG_ILLEGAL != enc_object2);
+
+        enc_relationship = wg_encode_blob(db, (char *)relationship->relationship, uuid_type, (wg_int)sizeof(uuid_t));
+        assert(WG_ILLEGAL != enc_relationship);
+
+    }
+    else {
+        // MUST not be NULL - and must be correct type(s)
+        assert(WG_BLOBTYPE == wg_get_field(db, relationship->record, hobodb_base_field_type));
+        assert(WG_STRTYPE == wg_get_field(db, relationship->record, hobodb_base_field_uuid));
+        assert(WG_STRTYPE == wg_get_field(db, relationship->record, hobodb_relationship_field_object1));
+        assert(WG_STRTYPE == wg_get_field(db, relationship->record, hobodb_relationship_field_object2));
+        assert(WG_BLOBTYPE == wg_get_field(db, relationship->record, hobodb_relationship_field_relationship));
+    }
+
+    // Now encode the base part
+    assert(0 == generic_base_encode(db, (hobodb_base_t *)relationship, initial));
+
+    // and the relationship part
+    enc_properties = wg_encode_blob(db, (char *)relationship->properties, uuid_type, (wg_int)sizeof(uuid_t));
+    assert(WG_ILLEGAL != enc_properties);
+
+    enc_attributes = wg_encode_blob(db, (char *)relationship->attributes, uuid_type, (wg_int)sizeof(uuid_t));
+    assert(WG_ILLEGAL != enc_attributes);
+
+    enc_labels = wg_encode_blob(db, (char *)relationship->labels, uuid_type, (wg_int)sizeof(uuid_t));
+    assert(WG_ILLEGAL != enc_labels);
+
+    lock_id = wg_start_write(db);
+    while (0 != lock_id) {
+        if (initial) {
+            assert(wg_set_field(db, relationship->record, hobodb_relationship_field_object1, enc_object1) >= 0);
+            assert(wg_set_field(db, relationship->record, hobodb_relationship_field_object2, enc_object2) >= 0);
+            assert(wg_set_field(db, relationship->record, hobodb_relationship_field_relationship, enc_relationship) >= 0);
+        }
+        assert(wg_set_field(db, relationship->record, hobodb_relationship_field_properties, enc_properties) >= 0);
+        assert(wg_set_field(db, relationship->record, hobodb_relationship_field_attributes, enc_attributes) >= 0);
+        assert(wg_set_field(db, relationship->record, hobodb_relationship_field_attributes, enc_labels) >= 0);
+        assert(0 != wg_end_write(db, lock_id)); // unlock failure is catastrophic
+        encoded = 1;
+        break;
+    }
+
+    assert(encoded);
+    return 0;
+}
+
+#if 0
+static int hobodb_update_relationship(void *db, hobodb_relationship_t *relationship)
 {
     int code = -EINVAL;
     wg_int enc_object1 = 0;
@@ -333,10 +508,11 @@ int hobodb_update_relationship(void *db, hobodb_relationship_t *relationship)
         return code;
     }
 
-    enc_object1 = wg_encode_blob(db, (char *)relationship->object1, uuid_type, (wg_int)sizeof(uuid_t));
+    // store uuid of this record as a string, so we can search on it
+    enc_object1 = encode_uuid_as_string(db, relationship->object1);
     assert(WG_ILLEGAL != enc_object1);
 
-    enc_object2 = wg_encode_blob(db, (char *)relationship->object2, uuid_type, (wg_int)sizeof(uuid_t));
+    enc_object2 = encode_uuid_as_string(db, relationship->object2);
     assert(WG_ILLEGAL != enc_object2);
 
     enc_relationship = wg_encode_blob(db, (char *)relationship->relationship, uuid_type, (wg_int)sizeof(uuid_t));
@@ -355,6 +531,7 @@ int hobodb_update_relationship(void *db, hobodb_relationship_t *relationship)
     while (0 != lock_id) {
         // TODO: should we store these as database timestamps?
         // store ctime of this record
+
         assert(wg_set_field(db, rec, hobodb_relationship_field_object1, enc_object1) >= 0);
         assert(wg_set_field(db, rec, hobodb_relationship_field_object2, enc_object2) >= 0);
         assert(wg_set_field(db, rec, hobodb_relationship_field_relationship, enc_relationship) >= 0);
@@ -368,26 +545,55 @@ int hobodb_update_relationship(void *db, hobodb_relationship_t *relationship)
 
     return code;
 }
+#endif // 0
 
-
-int hobodb_relationship_encode(void *db, hobodb_relationship_t *relationship, void **record)
+int hobodb_relationship_encode(void *db, hobodb_relationship_t *relationship)
 {
-    (void) db;
-    (void) relationship;
-    (void) record;
-    if (NULL != record) {
-        *record = NULL;
+    uuid_t relationship_type_uuid;
+    char uuid_type[16];
+    int initial = 0;
+
+    record_type_to_uuid("relationship", relationship_type_uuid);
+    assert(!uuid_is_null(relationship_type_uuid));
+    assert(NULL != relationship);
+    assert(0 == uuid_compare(relationship_type_uuid, relationship->type));
+    memset(uuid_type, 0, sizeof(uuid_type)-1);
+    strncpy(uuid_type, "uuid", sizeof(uuid_type)-1);
+
+    if (NULL == relationship->record) {
+        relationship->record = wg_create_record(db, hobodb_relationship_field_max);
+        if (NULL == relationship->record) {
+            return -ENOMEM;
+        }
+        initial = TRUE;
+
+#if 0
+        // store type field
+        enc = wg_encode_blob(db, (char *)relationship->type, uuid_type, (wg_int)sizeof(uuid_t));
+        assert(WG_ILLEGAL != enc);
+        lock_id = wg_start_write(db);
+        while (0 != lock_id) {
+            assert(wg_set_field(db, rec, hobodb_base_field_uuid, enc) >= 0);
+            assert(0 != wg_end_write(db, lock_id));
+
+            hobodb_update_relationship(db, relationship);
+
+            // Done
+            break;
+        }
+#endif // 0
     }
-    return ENOTSUP;
+    assert(0 == generic_relationship_encode(db, relationship, initial));
+
+    return 0;
     
 }
 
 
-int hobodb_relationship_decode(void *db, void *record, hobodb_relationship_t *relationship)
+int hobodb_relationship_decode(void *db, hobodb_relationship_t *relationship)
 {
     (void) db;
     (void) relationship;
-    (void) record;
     return ENOTSUP;
 
 }
@@ -416,6 +622,7 @@ hobodb_relationship_t *hobodb_alloc_relationship(void)
     while (NULL != newrel) {
         memset(newrel, 0, sizeof(hobodb_relationship_t));
         init_relationship(newrel);
+        break;
     }
 
     return newrel;
