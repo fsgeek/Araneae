@@ -471,7 +471,7 @@ static int generic_relationship_encode(void *db, hobodb_relationship_t *relation
         }
         assert(wg_set_field(db, relationship->record, hobodb_relationship_field_properties, enc_properties) >= 0);
         assert(wg_set_field(db, relationship->record, hobodb_relationship_field_attributes, enc_attributes) >= 0);
-        assert(wg_set_field(db, relationship->record, hobodb_relationship_field_attributes, enc_labels) >= 0);
+        assert(wg_set_field(db, relationship->record, hobodb_relationship_field_labels, enc_labels) >= 0);
         assert(0 != wg_end_write(db, lock_id)); // unlock failure is catastrophic
         encoded = 1;
         break;
@@ -590,12 +590,85 @@ int hobodb_relationship_encode(void *db, hobodb_relationship_t *relationship)
 }
 
 
+//
+// generic_base_decode: works on decoding the base portion of the object
+// _without_ insisting it has to be an object of a specific type (leave
+// that check to the caller!)
+//
+static int generic_relationship_decode(void *db, hobodb_relationship_t *relationship)
+{
+    wg_int enc_object1 = 0;
+    wg_int enc_object2 = 0;
+    wg_int enc_relationship = 0;
+    wg_int enc_properties = 0;
+    wg_int enc_attributes = 0;
+    wg_int enc_labels = 0;
+    wg_int lock_id = 0;
+    int decoded = 0;
+
+    assert(NULL != db);
+    assert(NULL != relationship);
+    assert(NULL != relationship->record);
+
+    assert(wg_get_record_len(db, relationship->record) >= hobodb_relationship_field_max);
+
+    assert(0 == generic_base_decode(db, (hobodb_base_t *)relationship));
+
+    lock_id = wg_start_read(db);
+    while (0 != lock_id) {
+        enc_object1 = wg_get_field(db, relationship->record, hobodb_relationship_field_object1);
+        enc_object2 = wg_get_field(db, relationship->record, hobodb_relationship_field_object2);
+        enc_relationship = wg_get_field(db, relationship->record, hobodb_relationship_field_relationship);
+        enc_properties = wg_get_field(db, relationship->record, hobodb_relationship_field_properties);
+        enc_attributes = wg_get_field(db, relationship->record, hobodb_relationship_field_attributes);
+        enc_labels = wg_get_field(db, relationship->record, hobodb_relationship_field_labels);
+        assert(0 != wg_end_read(db, lock_id)); // unlock failure = bad things
+        decoded = 1;
+        break;
+    }
+    assert(decoded);
+
+    assert(WG_STRTYPE == wg_get_encoded_type(db, enc_object1));
+    decode_uuid_from_string(db, enc_object1, relationship->object1);
+    assert(!uuid_is_null(relationship->object1));
+
+    assert(WG_STRTYPE == wg_get_encoded_type(db, enc_object2));
+    decode_uuid_from_string(db, enc_object2, relationship->object2);
+    assert(!uuid_is_null(relationship->object2));
+
+    assert(WG_BLOBTYPE == wg_get_encoded_type(db, enc_relationship));
+    assert(sizeof(uuid_t) == wg_decode_blob_len(db, enc_relationship));
+    memcpy(&relationship->relationship, wg_decode_blob(db, enc_relationship), sizeof(uuid_t));
+
+    assert(WG_BLOBTYPE == wg_get_encoded_type(db, enc_properties));
+    assert(sizeof(uuid_t) == wg_decode_blob_len(db, enc_properties));
+    memcpy(&relationship->properties, wg_decode_blob(db, enc_properties), sizeof(uuid_t));
+
+    assert(WG_BLOBTYPE == wg_get_encoded_type(db, enc_attributes));
+    assert(sizeof(uuid_t) == wg_decode_blob_len(db, enc_attributes));
+    memcpy(&relationship->attributes, wg_decode_blob(db, enc_attributes), sizeof(uuid_t));
+
+    assert(WG_BLOBTYPE == wg_get_encoded_type(db, enc_labels));
+    assert(sizeof(uuid_t) == wg_decode_blob_len(db, enc_labels));
+    memcpy(&relationship->labels, wg_decode_blob(db, enc_labels), sizeof(uuid_t));
+
+    return 0;
+}
+
 int hobodb_relationship_decode(void *db, hobodb_relationship_t *relationship)
 {
-    (void) db;
-    (void) relationship;
-    return ENOTSUP;
+    uuid_t relationship_type_uuid;
 
+    assert(NULL != db);
+    assert(NULL != relationship);
+    assert(NULL != relationship->record); // we can't decode without a record
+
+    record_type_to_uuid("relationship", relationship_type_uuid);
+    assert(!uuid_is_null(relationship_type_uuid));
+
+    assert(0 == generic_relationship_decode(db, relationship));
+
+    return 0;
 }
 
 

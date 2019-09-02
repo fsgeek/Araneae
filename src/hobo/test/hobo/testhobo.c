@@ -274,11 +274,11 @@ test_db_relationship(
 )
 {
     void *db;
-    hobodb_base_t *base;
     void *record = NULL;
     hobodb_base_t *object1 = NULL;
     hobodb_base_t *object2 = NULL;
     hobodb_relationship_t *relationship = NULL;
+    hobodb_relationship_t *relationship2 = NULL;
     uuid_t relationship_uuid;
 
     db = open_hobodb();
@@ -307,18 +307,24 @@ test_db_relationship(
     //
     // let's look up the record we just created
     //
+    // (1) Find it
+    // (2) allocate an object for it
+    // (3) decode it
+    //
+    // Note: at some point this needs to be tied up into a single operation
+    //
     record = hobodb_lookup_object(db, relationship->uuid);
     munit_assert(NULL != record);
 
-    //
-    // TODO: decode that record
-    //
-    base = hobodb_alloc_base();
-    munit_assert(NULL != base);
-    base->record = record;
+    relationship2 = hobodb_alloc_relationship();
+    munit_assert(NULL != relationship2);
+    relationship2->record = record;
 
-    munit_assert(0 == hobodb_base_decode(db, base));
+    munit_assert(0 == hobodb_relationship_decode(db, relationship));
 
+    //
+    // Declare victory and clean up
+    //
     close_hobodb(db);
     return MUNIT_OK;
 }
