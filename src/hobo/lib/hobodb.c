@@ -791,6 +791,11 @@ struct relationship_list {
 };
 
 
+//
+// So here's the interesting issue: relationships can be directional.
+//   Example: the "contains" relationship is directional ("A contains B") - hmm, the _interpretation_ is directional since "A contains B" implies "B is contained by A"
+// May not be an issue...
+//
 void *hobodb_lookup_relationship(void *db, uuid_t object)
 {
     void *rec = NULL;

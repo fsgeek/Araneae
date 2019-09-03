@@ -24,6 +24,7 @@ const struct fuse_lowlevel_ops *hobo_getops(void)
     hobo_ops.releasedir = hobo_releasedir;
     hobo_ops.open = hobo_open;
     hobo_ops.access = hobo_access;
+    hobo_ops.mkdir = hobo_mkdir;
 
     /*
     extern hobo_init_t hobo_init;

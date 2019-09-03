@@ -10,6 +10,7 @@ libhobo_sources = [
                    'lookup.c',
                    'open.c',
                    'opendir.c',
+                   'mkdir.c',
                    'readdir.c',
                    'releasedir.c',
                    ]
