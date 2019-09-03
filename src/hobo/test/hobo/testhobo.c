@@ -266,6 +266,49 @@ static hobodb_relationship_t *create_relationship_object(hobodb_base_t *object1,
     return object;
 }
 
+/** Print single record
+ *
+ */
+static void print_record(void *db, wg_int* rec,  FILE *logf) 
+{
+
+  wg_int len, enc;
+  int i;
+  char strbuf[256];
+
+  if (rec==NULL) {
+    fprintf(logf, "<null rec pointer>\n");
+    return;
+  }
+
+  len = wg_get_record_len(db, rec);
+  fprintf(logf, "[");
+  for(i=0; i<len; i++) {
+    if(i) fprintf(logf, ",");
+    enc = wg_get_field(db, rec, i);
+    wg_snprint_value(db, enc, strbuf, 255);
+    fprintf(logf, "%s", strbuf);
+  }
+  fprintf(logf, "]");
+}
+
+
+static void dump_db(void *db)
+{
+    void *rec = NULL;
+    FILE *logf = NULL;
+
+    logf = fopen("/tmp/testhobo.log", "w");
+    fprintf(logf, "Start db dump\n");
+    rec = wg_get_first_record(db);
+    while(rec) {
+        print_record(db, (wg_int *) rec, logf);
+        fprintf(logf, "\n");
+        rec = wg_get_next_record(db,rec);
+    }
+    fprintf(logf, "end db dump\n");
+    fflush(logf);
+}
 
 static MunitResult
 test_db_relationship(
@@ -280,6 +323,9 @@ test_db_relationship(
     hobodb_relationship_t *relationship = NULL;
     hobodb_relationship_t *relationship2 = NULL;
     uuid_t relationship_uuid;
+    hobodb_relationship_t *relationship_found = NULL;
+    unsigned count = 0;
+
 
     db = open_hobodb();
     munit_assert(NULL != db);
@@ -321,6 +367,22 @@ test_db_relationship(
     relationship2->record = record;
 
     munit_assert(0 == hobodb_relationship_decode(db, relationship));
+
+    dump_db(db);
+
+    //
+    // Now let's try to find all the relationships for a given object
+    //
+    void *results = hobodb_lookup_relationship(db, object1->uuid);
+    assert(NULL != results);
+
+    while ((relationship_found = hobodb_lookup_relationship_next(results))) {
+        assert(0 == uuid_compare(relationship->uuid, relationship_found->uuid));
+        hobodb_free_relationship(relationship_found);
+        count++;
+    }
+    assert(count > 0);
+
 
     //
     // Declare victory and clean up

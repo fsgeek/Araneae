@@ -100,6 +100,9 @@ hobodb_label_t *hobodb_alloc_label(unsigned count);
 void hobodb_free_label(hobodb_label_t *labels);
 
 void *hobodb_lookup_object(void *db, uuid_t uuid);
+void *hobodb_lookup_relationship(void *db, uuid_t object);
+hobodb_relationship_t *hobodb_lookup_relationship_next(void *list);
+
 
 void hobo_register_relationship(uuid_t relationship_uuid, const char *relationship_name);
 void hobo_lookup_relationship_by_name(const char *relationship_name, uuid_t *relationship_uuid);

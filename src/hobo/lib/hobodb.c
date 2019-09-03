@@ -785,6 +785,85 @@ void *hobodb_lookup_object(void *db, uuid_t uuid)
     return rec;
 }
 
+struct relationship_list {
+    list_entry_t list_entry;
+    hobodb_relationship_t *relationship;
+};
+
+
+void *hobodb_lookup_relationship(void *db, uuid_t object)
+{
+    void *rec = NULL;
+    char uuid_string[40];
+    wg_int lock_id;
+    unsigned count;
+    list_entry_t *list = NULL;
+    struct relationship_list *list_entry = NULL;
+
+    assert(NULL != db);
+    assert(!uuid_is_null(object));
+    
+    list = malloc(sizeof(list_entry_t));
+    initialize_list(list);
+    uuid_unparse_lower(object, uuid_string);
+
+    lock_id = wg_start_read(db);
+    while (0 != lock_id) {
+
+        // first look in the first field of the relationship
+        for (count = 0, rec = wg_find_record_str(db, hobodb_relationship_field_object1, WG_COND_EQUAL, uuid_string, NULL);
+             rec;
+             rec = wg_find_record_str(db, hobodb_relationship_field_object1, WG_COND_EQUAL, uuid_string, rec)) {
+                list_entry = malloc(sizeof(struct relationship_list));
+                assert(NULL != list_entry);
+                list_entry->relationship = hobodb_alloc_relationship();
+                assert(NULL != list_entry->relationship);
+                list_entry->relationship->record = rec;
+                assert(0 == hobodb_relationship_decode(db, list_entry->relationship));
+                insert_list_tail(list, &list_entry->list_entry);
+                count = count + 1;
+        }
+
+        // now look in the second field of the relationship
+        for (rec = wg_find_record_str(db, hobodb_relationship_field_object2, WG_COND_EQUAL, uuid_string, NULL);
+             rec;
+             rec = wg_find_record_str(db, hobodb_relationship_field_object2, WG_COND_EQUAL, uuid_string, rec)) {
+                list_entry = malloc(sizeof(struct relationship_list));
+                assert(NULL != list_entry);
+                list_entry->relationship = hobodb_alloc_relationship();
+                assert(NULL != list_entry->relationship);
+                list_entry->relationship->record = rec;
+                assert(0 == hobodb_relationship_decode(db, list_entry->relationship));
+                insert_list_tail(list, &list_entry->list_entry);
+                count = count + 1;
+        }
+
+        assert(0 != wg_end_read(db, lock_id)); // unlock failure is catastrophic
+        break;
+    }
+
+    if (count > 0) {
+        return list;
+    }
+    else {
+        return NULL;
+    }
+}
+
+hobodb_relationship_t *hobodb_lookup_relationship_next(void *list)
+{
+    struct relationship_list *list_entry = NULL;
+    hobodb_relationship_t *relationship = NULL;
+
+    if (empty_list(list)) {
+        return NULL;
+    }
+
+    list_entry = container_of(remove_list_head(list), struct relationship_list, list_entry);
+    relationship = list_entry->relationship;
+    free(list_entry);
+    return relationship;
+}
 
 
 /*
