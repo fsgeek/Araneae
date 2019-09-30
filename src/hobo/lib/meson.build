@@ -5,6 +5,8 @@ libhobo_sources = [
                    'hobo.c', 'hobo.h',
                    'hobo-list.h',
                    'hobodb.c', 'hobodb.h',
+                   'hobodb-types.c', 'hobodb-types.h',
+                   'hobodb-util.c', 'hobodb-util.h',
                    'init.c',
                    'ino-lookup.c', 'ino-lookup.h',
                    'lookup.c',

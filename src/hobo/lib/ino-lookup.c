@@ -158,7 +158,7 @@ static hobo_internal_object_t *object_create(fuse_ino_t inode, uuid_t *uuid, voi
     return internal_object;
 }
 
-hobo_object_t *hobo_object_create(fuse_ino_t inode, uuid_t *uuid, void *data)
+hobo_object_t *hobo_object_create(fuse_ino_t inode, const uuid_t *uuid, void *data)
 {
     uuid_t dummy_uuid;
 

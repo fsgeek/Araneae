@@ -8,6 +8,8 @@
 //
 
 #include "hobodb.h"
+#include "hobodb-types.h"
+#include <pthread.h>
 
 #if !defined(offset_of)
 #define offset_of(type, field) (unsigned long)&(((type *)0)->field)
@@ -38,10 +40,6 @@ const int hobodb_relationship_field_labels = 10;
 const int hobodb_relationship_field_max = 11;
 
 // TODO: define field locations for other object types
-
-
-// forward reference
-static void record_type_to_uuid(const char *type, uuid_t uuid);
 
 
 // helper function
@@ -79,7 +77,7 @@ static void decode_uuid_from_string(void *db, wg_int enc, uuid_t uuid)
 
 static void init_base(hobodb_base_t *base) 
 {
-    record_type_to_uuid("base", base->type);
+    hobodb_lookup_record_type_uuid("base", base->type);
     uuid_generate(base->uuid);
     assert(!uuid_is_null(base->uuid));
 
@@ -114,7 +112,7 @@ static int generic_base_encode(void *db, hobodb_base_t *base, int initial)
         assert(0 == wg_get_field(db, base->record, hobodb_base_field_type));
         assert(0 == wg_get_field(db, base->record, hobodb_base_field_uuid));
 
-        record_type_to_uuid("base", base->type);
+        hobodb_lookup_record_type_uuid("base", base->type);
         assert(!uuid_is_null(base->type));
 
         uuid_type[sizeof(uuid_type)-1] = '\0';
@@ -172,7 +170,7 @@ int hobodb_base_encode(void *db, hobodb_base_t *base)
     char uuid_type[16];
     int initial = 0;
     
-    record_type_to_uuid("base", base_type_uuid);
+    hobodb_lookup_record_type_uuid("base", base->type);
     assert(!uuid_is_null(base_type_uuid));
     assert(NULL != base);
     assert(0 == uuid_compare(base_type_uuid, base->type));
@@ -270,7 +268,7 @@ int hobodb_base_decode(void *db, hobodb_base_t *base)
     assert(NULL != base);
     assert(NULL != base->record); // we can't decode without a record
 
-    record_type_to_uuid("base", base_type_uuid);
+    hobodb_lookup_record_type_uuid("base", base_type_uuid);
     assert(!uuid_is_null(base_type_uuid));
 
     assert(0 == generic_base_decode(db, base));
@@ -419,7 +417,7 @@ static int generic_relationship_encode(void *db, hobodb_relationship_t *relation
         assert(0 == wg_get_field(db, relationship->record, hobodb_relationship_field_object2));
         assert(0 == wg_get_field(db, relationship->record, hobodb_relationship_field_relationship));
 
-        record_type_to_uuid("relationship", relationship->type);
+        hobodb_lookup_record_type_uuid("relationship", relationship->type);
         assert(!uuid_is_null(relationship->type));
 
         uuid_type[sizeof(uuid_type)-1] = '\0';
@@ -553,7 +551,7 @@ int hobodb_relationship_encode(void *db, hobodb_relationship_t *relationship)
     char uuid_type[16];
     int initial = 0;
 
-    record_type_to_uuid("relationship", relationship_type_uuid);
+    hobodb_lookup_record_type_uuid("relationship", relationship_type_uuid);
     assert(!uuid_is_null(relationship_type_uuid));
     assert(NULL != relationship);
     assert(0 == uuid_compare(relationship_type_uuid, relationship->type));
@@ -663,7 +661,7 @@ int hobodb_relationship_decode(void *db, hobodb_relationship_t *relationship)
     assert(NULL != relationship);
     assert(NULL != relationship->record); // we can't decode without a record
 
-    record_type_to_uuid("relationship", relationship_type_uuid);
+    hobodb_lookup_record_type_uuid("relationship", relationship_type_uuid);
     assert(!uuid_is_null(relationship_type_uuid));
 
     assert(0 == generic_relationship_decode(db, relationship));
@@ -678,7 +676,7 @@ static void init_relationship(hobodb_relationship_t *newrel)
     memset(newrel, 0, sizeof(hobodb_relationship_t));
 
     init_base((hobodb_base_t *)newrel);
-    record_type_to_uuid("relationship", newrel->type); // override
+    hobodb_lookup_record_type_uuid("relationship", newrel->type); // override
     uuid_clear(newrel->object1);
     uuid_clear(newrel->object2);
     uuid_clear(newrel->relationship);
@@ -712,19 +710,22 @@ void hobodb_free_relationship(hobodb_relationship_t *relationship)
     }
 }
 
+int hobodb_update_relationship(void *db, hobodb_relationship_t *relationship)
+{
+    (void) db;
+    (void) relationship;
+    assert(0); // not implemented
+}
 
 
-int hobodb_properties_encode(void *db, hobodb_properties_t *properties, void **record)
+
+
+int hobodb_properties_encode(void *db, hobodb_properties_t *properties)
 {
     (void) db;
     (void) properties;
-    (void) record;
-    if (NULL != record) {
-        *record = NULL;
-    }
     return ENOTSUP;
 }
-
 
 
 int hobodb_properties_decode(void *db, void *record, hobodb_properties_t *properties)
@@ -735,33 +736,52 @@ int hobodb_properties_decode(void *db, void *record, hobodb_properties_t *proper
     return ENOTSUP;
 }
 
-int hobodb_attributes_encode(void *db, hobodb_attributes_t *attributes, void **record)
+void hobodb_free_properties(void *properties)
+{
+    (void) properties;
+    assert(0); // not implemented
+}
+
+int hobodb_update_properties(void *db, hobodb_properties_t *properties)
+{
+    (void) db;
+    (void) properties;
+    assert(0); // not implemented
+}
+
+int hobodb_attributes_encode(void *db, hobodb_attributes_t *attributes)
 {
     (void) db;
     (void) attributes;
-    (void) record;
-    if (NULL != record) {
-        *record = NULL;
-    }
     return ENOTSUP;
 }
 
 int hobodb_attributes_decode(void *db, void *record, hobodb_attributes_t *attributes)
 {
     (void) db;
-    (void) attributes;
     (void) record;
+    (void) attributes;
     return ENOTSUP;
 }
 
-int hobodb_labels_encode(void *db, hobodb_label_t *labels, void **record)
+void hobodb_free_attributes(hobodb_attributes_t *attributes)
+{
+    (void) attributes;
+    assert(0); // not implemented
+}
+
+int hobodb_update_attributes(void *db, hobodb_attributes_t *attributes)
+{
+    (void) db;
+    (void) attributes;
+    assert(0);
+}
+
+
+int hobodb_labels_encode(void *db, hobodb_label_t *labels)
 {
     (void) db;
     (void) labels;
-    (void) record;
-    if (NULL != record) {
-        *record = NULL;
-    }
     return ENOTSUP;
 }
 
@@ -773,7 +793,20 @@ int hobodb_labels_decode(void *db, void *record, hobodb_label_t *labels)
     return ENOTSUP;
 }
 
-void *hobodb_lookup_object(void *db, uuid_t uuid)
+void hobodb_free_label(hobodb_label_t *labels)
+{
+    (void) labels;
+    assert(0); // not implemented
+}
+
+int hobodb_update_label(void *db, hobodb_label_t *label)
+{
+    (void) db;
+    (void) label;
+    assert(0); // not implemented
+}
+
+void *hobodb_lookup_object(void *db, const uuid_t uuid)
 {
     void *rec = NULL;
     char uuid_string[40];
@@ -796,7 +829,7 @@ struct relationship_list {
 //   Example: the "contains" relationship is directional ("A contains B") - hmm, the _interpretation_ is directional since "A contains B" implies "B is contained by A"
 // May not be an issue...
 //
-void *hobodb_lookup_relationship(void *db, uuid_t object)
+void *hobodb_lookup_relationship(void *db, const uuid_t object)
 {
     void *rec = NULL;
     char uuid_string[40];
@@ -870,40 +903,6 @@ hobodb_relationship_t *hobodb_lookup_relationship_next(void *list)
     return relationship;
 }
 
-
-/*
-    hobodb_base_object_type = 100,
-    hobdb_relationship_object_type = 200,
-    hobodb_property_object_type = 300,
-    hobodb_attribute_object_type = 400,
-    hobodb_label_object_type = 500,
-*/
-
-typedef struct {
-    const char *uuid;
-    const char *name;
-    hobodb_object_types_t type;
-} hobo_record_type_t;
-
-static hobo_record_type_t hobo_record_type_uuids[] = {
-    {"407d2137-7b37-42eb-aa95-049c35a61dd1", "base", hobodb_base_object_type},
-    {"228dee9c-7992-4c1a-bcbd-e7c99e8640f3", "relationship", hobdb_relationship_object_type},
-    {"3379e377-5a1a-4810-88de-b6e65d97ee19", "property", hobodb_property_object_type},
-    {"2da1ebd3-6098-4cfd-8480-edf43babfafd", "attribute", hobodb_attribute_object_type},
-    {"06d119e4-5893-40ea-9565-313b772b8573", "label", hobodb_label_object_type},
-};
-
-static void record_type_to_uuid(const char *type, uuid_t uuid)
-{
-    uuid_clear(uuid);
-    for (unsigned index = 0; index < (sizeof(hobo_record_type_uuids)/sizeof(hobo_record_type_t)); index++) {
-        if (0 == strcmp(hobo_record_type_uuids[index].name, type)) {
-            assert(0 == uuid_parse(hobo_record_type_uuids[index].uuid, uuid));
-            break;
-        }
-    }
-    return;
-}
 
 typedef struct _hobo_relationship_type {
     list_entry_t list_entry;

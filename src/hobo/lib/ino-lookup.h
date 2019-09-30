@@ -43,7 +43,7 @@ typedef void (*hobo_object_cleanup_callback_t)(void *);
 hobo_object_t *hobo_object_lookup_by_ino(fuse_ino_t inode);
 hobo_object_t *hobo_object_lookup_by_uuid(uuid_t *uuid);
 void hobo_object_release(hobo_object_t *object, hobo_object_cleanup_callback_t cleanup);
-hobo_object_t *hobo_object_create(fuse_ino_t inode, uuid_t *uuid, void *data);
+hobo_object_t *hobo_object_create(fuse_ino_t inode, const uuid_t *uuid, void *data);
 
 #endif // __HOBO_LOOKUP_H__
 

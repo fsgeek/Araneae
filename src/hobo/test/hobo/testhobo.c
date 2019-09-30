@@ -22,6 +22,7 @@
 #include "munit.h"
 #include <errno.h>
 #include <hobodb.h>
+#include <hobodb-util.h>
 
 #if !defined(__notused)
 #define __notused __attribute__((unused))
@@ -142,129 +143,6 @@ test_db_base(
 }
 
 
-#if 0
-
-//
-// The question is how to handle the various types of objects that are coming back
-//
-
-static hobodb_base_t *create_base_object(void *db, uuid_t object_uuid)
-{
-    hobodb_base_t *object = NULL;
-    void *record = NULL;
-
-    object = hobodb_alloc_base();
-    munit_assert(NULL != object);
-
-    object->ctime = time(NULL);
-    object->atime = object->ctime;
-    object->uri.prefix = NULL;
-    object->usr.name = NULL;
-
-    // encode
-    munit_assert(0 == hobodb_base_encode(db, object, &record));
-    munit_assert(NULL != record);
-    munit_assert(object->record == record);
-    uuid_copy(object_uuid, object->uuid);
-
-    return object;
-}
-
-
-static hobodb_relationship_t *create_relationship_object(void *db) 
-{
-    (void) db;
-
-    return NULL;
-}
-
-static hobodb_property_t *create_property_object(void *db)
-{
-    (void) db;
-
-    return NULL;
-}
-
-static hobodb_attribute_t *create_attribute_object(void *db)
-{
-    (void) db;
-
-    return NULL;
-}
-
-
-
-
-static void hobodb_base_t *create_object(void *db, uuid_t object_uuid, hobodb_object_types_t type) 
-{
-    void *object = NULL;
-
-    switch(type) {} {
-        case hobodb_base_object_type: {
-            object = create_base_object(db, object_uuid)
-            break;
-        }
-        case hobdb_relationship_object_type: {
-            break;
-        }
-        case hobodb_property_object_type: {
-            break;
-        }
-        case hobodb_attribute_object_type: {
-            break;
-        }
-        case hobodb_label_object_type {
-            break;
-        }
-    }
-}
-#endif // 0
-
-static hobodb_base_t *create_base_object(void *db, const char *prefix, const char *name)
-{
-    hobodb_base_t *object = NULL;
-
-    object = hobodb_alloc_base();
-    munit_assert(NULL != object);
-
-    object->ctime = time(NULL);
-    object->atime = object->ctime;
-    if (NULL != prefix) {
-        object->uri.prefix = strdup(prefix);
-    } else {
-        object->uri.prefix = NULL;
-    }
-    object->uri.name = strdup(name);
-
-    // encode
-    munit_assert(0 == hobodb_base_encode(db, object));
-    munit_assert(NULL != object->record);
-
-    return object;
-}
-
-static hobodb_relationship_t *create_relationship_object(hobodb_base_t *object1, hobodb_base_t *object2, const uuid_t relationship_uuid)
-{
-    hobodb_relationship_t *object = NULL;
-
-    assert(NULL != object1);
-    assert(NULL != object2);
-    assert(!uuid_is_null(relationship_uuid));
-
-    object = hobodb_alloc_relationship();
-
-    while (NULL != object) {
-        uuid_copy(object->object1, object1->uuid);
-        uuid_copy(object->object2, object2->uuid);
-        uuid_copy(object->relationship, relationship_uuid);
-        uuid_clear(object->properties);
-        uuid_clear(object->attributes);
-        uuid_clear(object->labels);
-
-        break;
-    }
-    return object;
-}
 
 /** Print single record
  *
@@ -325,29 +203,46 @@ test_db_relationship(
     uuid_t relationship_uuid;
     hobodb_relationship_t *relationship_found = NULL;
     unsigned count = 0;
-
+    hobo_util_create_parameters_t hobo_params;
 
     db = open_hobodb();
     munit_assert(NULL != db);
 
     // create a pair of objects
-    object1 = create_base_object(db, "file", "foo");
+    
+    memset(&hobo_params, 0, sizeof(hobo_params));
+    hobo_params.type = hobo_base_object_type;
+    hobo_params.parameters.base_object_parameters.uri.prefix = "file";
+    hobo_params.parameters.base_object_parameters.uri.name = "foo";
+    object1 = hobo_util_create_object(&hobo_params);
     munit_assert(NULL != object1);
-    object2 = create_base_object(db, "file", "bar");
+    munit_assert(0 == hobo_util_encode_object(db, object1));
+
+    memset(&hobo_params, 0, sizeof(hobo_params));
+    hobo_params.type = hobo_base_object_type;
+    hobo_params.parameters.base_object_parameters.uri.prefix = "file";
+    hobo_params.parameters.base_object_parameters.uri.name = "bar";
+    object2 = hobo_util_create_object(&hobo_params);
     munit_assert(NULL != object2);
+    munit_assert(0 == hobo_util_encode_object(db, object2));
 
     // now create a relationship between them
     // TODO: need to pre-define common relationship types
     //       Also, probably need a way to permanently define these, in order to permit "portability"
     //       obvious answer: create an object, using this as the uuid, then associate a property with it.
     uuid_generate(relationship_uuid); 
-    relationship = create_relationship_object(object1, object2, relationship_uuid);
+    memset(&hobo_params, 0, sizeof(hobo_params));
+    hobo_params.type = hobo_relationship_object_type;
+    uuid_copy(hobo_params.parameters.relationship_object_parameters.object1, object1->uuid);
+    uuid_copy(hobo_params.parameters.relationship_object_parameters.object2, object2->uuid);
+    uuid_copy(hobo_params.parameters.relationship_object_parameters.relationship, relationship_uuid);
+    relationship = hobo_util_create_object(&hobo_params);
     munit_assert(NULL != relationship);
 
     //
     // Now we need to encode this
     //
-    munit_assert(0 == hobodb_relationship_encode(db, relationship));
+    munit_assert(0 == hobo_util_encode_object(db, relationship));
 
 
     //

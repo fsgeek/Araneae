@@ -13,6 +13,7 @@
 
 #include "hobofs.h"
 #include "ino-lookup.h"
+#include "hobodb-util.h"
 
 typedef void (*hobo_init_t)(void *userdata, struct fuse_conn_info *conn);
 typedef void (*hobo_destroy_t)(void *userdata);
@@ -104,5 +105,7 @@ extern hobo_copy_file_range_t hobo_copy_file_range;
 
 extern hobo_object_t *root_hob;
 extern void *hobo_db;
+extern hobodb_base_t *hobo_root_object;
+extern const uuid_t hobo_container_relationship_uuid;
 
 #endif // __HOBO_H__

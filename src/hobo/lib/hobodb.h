@@ -10,18 +10,20 @@
 
 #if !defined(__HOBODB_H__)
 #define __HOBODB_H__ (1)
-#include "hobo.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <assert.h>
+#include "hobodb-types.h"
+#include "hobo-list.h"
+#include <uuid/uuid.h>
 #include <whitedb/dbapi.h>
 #include <whitedb/indexapi.h>
-
-
-typedef enum {
-    hobodb_base_object_type = 100,
-    hobdb_relationship_object_type = 200,
-    hobodb_property_object_type = 300,
-    hobodb_attribute_object_type = 400,
-    hobodb_label_object_type = 500,
-} hobodb_object_types_t;
 
 typedef struct {
     void *record; // if not NULL, this is a database record
@@ -69,6 +71,8 @@ typedef struct {
 
 
 // This API is in flux... 28 August 2019 (WAM)
+// TODO: use one format for these routines either hobodb_verb_noun or hobodb_noun_verb, not both
+//
 int hobodb_base_encode(void *db, hobodb_base_t *base); // might want to hide this
 int hobodb_base_decode(void *db, hobodb_base_t *base); // might want to hide this
 hobodb_base_t *hobodb_alloc_base(void);
@@ -81,31 +85,40 @@ int hobodb_relationship_encode(void *db, hobodb_relationship_t *relationship);
 int hobodb_relationship_decode(void *db, hobodb_relationship_t *relationship);
 hobodb_relationship_t *hobodb_alloc_relationship(void);
 void hobodb_free_relationship(hobodb_relationship_t *relationship);
+int hobodb_update_relationship(void *db, hobodb_relationship_t *relationship);
 
-int hobodb_properties_encode(void *db, hobodb_properties_t *properties, void **record);
+int hobodb_properties_encode(void *db, hobodb_properties_t *properties);
 int hobodb_properties_decode(void *db, void *record, hobodb_properties_t *properties);
 hobodb_properties_t *hobodb_alloc_properties(unsigned count);
 void hobodb_free_properties(void *properties);
+int hobodb_update_properties(void *db, hobodb_properties_t *properties);
 
 
-int hobodb_attributes_encode(void *db, hobodb_attributes_t *attributes, void **record);
+int hobodb_attributes_encode(void *db, hobodb_attributes_t *attributes);
 int hobodb_attributes_decode(void *db, void *record, hobodb_attributes_t *attributes);
 hobodb_attributes_t *hobodb_alloc_attributes(unsigned count);
 void hobodb_free_attributes(hobodb_attributes_t *attributes);
+int hobodb_update_attributes(void *db, hobodb_attributes_t *attributes);
 
 
-int hobodb_labels_encode(void *db, hobodb_label_t *labels, void **record);
+int hobodb_labels_encode(void *db, hobodb_label_t *labels);
 int hobodb_labels_decode(void *db, void *record, hobodb_label_t *labels);
 hobodb_label_t *hobodb_alloc_label(unsigned count);
 void hobodb_free_label(hobodb_label_t *labels);
+int hobodb_update_label(void *db, hobodb_label_t *label);
 
-void *hobodb_lookup_object(void *db, uuid_t uuid);
-void *hobodb_lookup_relationship(void *db, uuid_t object);
+void *hobodb_lookup_object(void *db, const uuid_t uuid);
+void *hobodb_lookup_relationship(void *db, const uuid_t object);
 hobodb_relationship_t *hobodb_lookup_relationship_next(void *list);
 
 
 void hobo_register_relationship(uuid_t relationship_uuid, const char *relationship_name);
 void hobo_lookup_relationship_by_name(const char *relationship_name, uuid_t *relationship_uuid);
 void hobo_lookup_relationship_by_uuid(uuid_t relationship_uuid, char **relationship_name);
+
+const char *hobodb_lookup_record_type_uuid_string(const char *name);
+const char *hobodb_lookup_record_type_name(const uuid_t uuid);
+void hobodb_lookup_record_type_uuid(const char *name, uuid_t uuid);
+
 
 #endif // __HOBODB_H__
