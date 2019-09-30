@@ -32,6 +32,7 @@ static hobodb_base_t *create_base_object(const char *prefix, const char *name)
             object->uri.prefix = NULL;
         }
         object->uri.name = strdup(name);
+        break;
     }
 
     return object;
@@ -151,15 +152,15 @@ static void init_type_uuids(void) {
 
     if (0 == type_uuid_init) {
         hobodb_lookup_record_type_uuid("base", base_type_uuid);
-        assert(0 != uuid_is_null(base_type_uuid));
+        assert(0 == uuid_is_null(base_type_uuid));
         hobodb_lookup_record_type_uuid("relationship", relationship_type_uuid);
-        assert(0 != uuid_is_null(relationship_type_uuid));
+        assert(0 == uuid_is_null(relationship_type_uuid));
         hobodb_lookup_record_type_uuid("property", property_type_uuid);
-        assert(0 != uuid_is_null(property_type_uuid));
+        assert(0 == uuid_is_null(property_type_uuid));
         hobodb_lookup_record_type_uuid("attribute", attribute_type_uuid);
-        assert(0 != uuid_is_null(attribute_type_uuid));
+        assert(0 == uuid_is_null(attribute_type_uuid));
         hobodb_lookup_record_type_uuid("label", label_type_uuid);
-        assert(0 != uuid_is_null(label_type_uuid));
+        assert(0 == uuid_is_null(label_type_uuid));
         type_uuid_init = 1;
     }
 }

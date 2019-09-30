@@ -170,7 +170,7 @@ int hobodb_base_encode(void *db, hobodb_base_t *base)
     char uuid_type[16];
     int initial = 0;
     
-    hobodb_lookup_record_type_uuid("base", base->type);
+    hobodb_lookup_record_type_uuid("base", base_type_uuid);
     assert(!uuid_is_null(base_type_uuid));
     assert(NULL != base);
     assert(0 == uuid_compare(base_type_uuid, base->type));
@@ -716,7 +716,6 @@ int hobodb_update_relationship(void *db, hobodb_relationship_t *relationship)
     (void) relationship;
     assert(0); // not implemented
 }
-
 
 
 
