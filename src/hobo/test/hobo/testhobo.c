@@ -21,6 +21,7 @@
 #include <pthread.h>
 #include "munit.h"
 #include <errno.h>
+#include <hobo.h>
 #include <hobodb.h>
 #include <hobodb-util.h>
 
@@ -236,13 +237,13 @@ test_db_relationship(
     uuid_copy(hobo_params.parameters.relationship_object_parameters.object1, object1->uuid);
     uuid_copy(hobo_params.parameters.relationship_object_parameters.object2, object2->uuid);
     uuid_copy(hobo_params.parameters.relationship_object_parameters.relationship, relationship_uuid);
-    relationship = hobo_util_create_object(&hobo_params);
+    relationship = (hobodb_relationship_t *)hobo_util_create_object(&hobo_params);
     munit_assert(NULL != relationship);
 
     //
     // Now we need to encode this
     //
-    munit_assert(0 == hobo_util_encode_object(db, relationship));
+    munit_assert(0 == hobo_util_encode_object(db, (hobodb_base_t *)relationship));
 
 
     //
@@ -286,6 +287,194 @@ test_db_relationship(
     return MUNIT_OK;
 }
 
+/*
+struct fuse_req {
+        struct fuse_session *se;
+        uint64_t unique;
+        int ctr;
+        pthread_mutex_t lock;
+        struct fuse_ctx ctx;
+        struct fuse_chan *ch;
+        int interrupted;
+        unsigned int ioctl_64bit : 1;
+        union {
+                struct {
+                        uint64_t unique;
+                } i;
+                struct {
+                        fuse_interrupt_func_t func;
+                        void *data;
+                } ni;
+        } u;
+        struct fuse_req *next;
+        struct fuse_req *prev;
+};
+*/
+struct fuse_req {
+    void *must_be_null; // corresponds to the fuse_session, which we aren't using
+    // fields here can be used to validate the expected results.
+};
+
+const uuid_t hobo_root_uuid = {0x71, 0x9d, 0x92, 0xf9, 0x19, 0x64, 0x49, 0xdb, 0x98, 0x1d, 0xb4, 0xbd, 0x77, 0x44, 0x95, 0x1b};
+const uuid_t hobo_container_relationship_uuid = {0xe3, 0xf6, 0x12, 0xef, 0x4d, 0xbf, 0x47, 0xed, 0x88, 0xc4, 0x74, 0x2f, 0x11, 0x06, 0xe5, 0x8f};
+
+static MunitResult
+test_init(
+    const MunitParameter params[] __notused,
+    void *prv __notused
+)
+{
+    hobo_init(NULL, NULL);
+
+    // cleanup
+    hobo_destroy(NULL);
+    // Dummy test for the moment.
+    return MUNIT_OK;
+} 
+
+int fuse_reply_err(fuse_req_t req, int err)
+{
+    assert(NULL != req);
+    assert(NULL == req->must_be_null);
+    (void) err;
+    return 0;
+}
+
+void fuse_reply_none(fuse_req_t req)
+{
+    assert(NULL != req);
+    assert(NULL == req->must_be_null);
+    return;
+}
+
+int fuse_reply_entry(fuse_req_t req, const struct fuse_entry_param *e)
+{
+    assert(NULL != req);
+    assert(NULL == req->must_be_null);
+    (void) e;
+    return 0;
+}
+
+int fuse_reply_create(fuse_req_t req, const struct fuse_entry_param *e,
+		      const struct fuse_file_info *fi)
+{
+    assert(NULL != req);
+    assert(NULL == req->must_be_null);
+    (void) e;
+    (void) fi;
+    return 0;
+}
+
+int fuse_reply_attr(fuse_req_t req, const struct stat *attr, double attr_timeout)
+{
+    assert(NULL != req);
+    assert(NULL == req->must_be_null);
+    (void) attr;
+    (void) attr_timeout;
+    return 0;
+
+}
+
+int fuse_reply_open(fuse_req_t req, const struct fuse_file_info *fi)
+{
+    assert(NULL != req);
+    assert(NULL == req->must_be_null);
+    (void) fi;
+    return 0;
+
+}
+
+int fuse_reply_write(fuse_req_t req, size_t count)
+{
+    assert(NULL != req);
+    assert(NULL == req->must_be_null);
+    (void) count;
+    return 0;
+
+}
+
+int fuse_reply_buf(fuse_req_t req, const char *buf, size_t size)
+{
+    assert(NULL != req);
+    assert(NULL == req->must_be_null);
+    (void) buf;
+    (void) size;
+    return 0;
+
+}
+
+int fuse_reply_data(fuse_req_t req, struct fuse_bufvec *bufv, enum fuse_buf_copy_flags flags)
+{
+    assert(NULL != req);
+    assert(NULL == req->must_be_null);
+    (void) bufv;
+    (void) flags;
+    return 0;
+
+}
+
+int fuse_reply_iov(fuse_req_t req, const struct iovec *iov, int count)
+{
+    assert(NULL != req);
+    assert(NULL == req->must_be_null);
+    (void) iov;
+    (void) count;
+    return 0;
+}
+
+int fuse_reply_statfs(fuse_req_t req, const struct statvfs *stbuf)
+{
+    assert(NULL != req);
+    assert(NULL == req->must_be_null);
+    (void) stbuf;
+    return 0;
+}
+
+int fuse_reply_xattr(fuse_req_t req, size_t count)
+{
+    assert(NULL != req);
+    assert(NULL == req->must_be_null);
+    (void) count;
+    return 0;
+}
+
+int fuse_reply_lock(fuse_req_t req, const struct flock *lock)
+{
+    assert(NULL != req);
+    assert(NULL == req->must_be_null);
+    (void) lock;
+    return 0;
+}
+
+int fuse_reply_bmap(fuse_req_t req, uint64_t idx)
+{
+    assert(NULL != req);
+    assert(NULL == req->must_be_null);
+    (void) idx;
+    return 0;
+}
+
+
+static MunitResult
+test_mkdir(
+    const MunitParameter params[] __notused,
+    void *prv __notused
+)
+{
+    struct fuse_req req; 
+    hobo_init(NULL, NULL);
+
+    dump_db(hobo_db);
+
+    memset(&req, 0, sizeof(req));
+    hobo_mkdir(&req, (fuse_ino_t) FUSE_ROOT_ID, "test1", 0755);
+
+    // cleanup
+    hobo_destroy(NULL);
+    // Dummy test for the moment.
+    return MUNIT_OK;
+} 
+
 
 
 #define TEST(_name, _func, _params)             \
@@ -308,6 +497,8 @@ main(
         TEST((char *)(uintptr_t)"/hobodb/open", test_dbopen, NULL),
         TEST((char *)(uintptr_t)"/hobodb/db_base", test_db_base, NULL),
         TEST((char *)(uintptr_t)"/hobodb/db_relationship", test_db_relationship, NULL),
+        TEST((char *)(uintptr_t)"/hobodb/init", test_init, NULL),
+        TEST((char *)(uintptr_t)"/hobodb/mkdir", test_mkdir, NULL),
         TEST(NULL, NULL, NULL),
     };
     static const MunitSuite suite = {

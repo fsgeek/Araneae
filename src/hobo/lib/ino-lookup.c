@@ -124,7 +124,7 @@ static void release(hobo_internal_object_t *object, hobo_object_cleanup_callback
     }
 }
 
-static hobo_internal_object_t *object_create(fuse_ino_t inode, uuid_t *uuid, void *data)
+static hobo_internal_object_t *object_create(fuse_ino_t inode, const uuid_t *uuid, void *data)
 {
     hobo_internal_object_t *internal_object = (hobo_internal_object_t *)malloc(sizeof(hobo_internal_object_t));
     hobo_internal_object_t *dummy = NULL;
@@ -217,3 +217,9 @@ static void unlock_table(void)
     pthread_rwlock_unlock(&table_lock);
 }
 
+uint64_t hobo_get_inode_number(void)
+{
+    static uint64_t inode_number = 2;
+
+    return __sync_fetch_and_add(&inode_number, 1);
+}

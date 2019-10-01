@@ -10,6 +10,9 @@
 #include "hobo.h"
 #include <whitedb/dbapi.h>
 
+extern int hobo_initialized;
+
+
 static void destroy(void *userdata)
 {
     fprintf(stderr, "HoboFS: called %s, userdata = 0x%p\n",__PRETTY_FUNCTION__, userdata);
@@ -21,6 +24,7 @@ static void destroy(void *userdata)
 
     // TODO: cleanup/save any persistent store
     wg_detach_database(hobo_db);
-
+    hobo_initialized = 0;
+    
 }
 hobo_destroy_t hobo_destroy = destroy;

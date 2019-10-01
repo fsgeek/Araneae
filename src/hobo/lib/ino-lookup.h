@@ -45,6 +45,8 @@ hobo_object_t *hobo_object_lookup_by_uuid(uuid_t *uuid);
 void hobo_object_release(hobo_object_t *object, hobo_object_cleanup_callback_t cleanup);
 hobo_object_t *hobo_object_create(fuse_ino_t inode, const uuid_t *uuid, void *data);
 
+uint64_t hobo_get_inode_number(void);
+
 #endif // __HOBO_LOOKUP_H__
 
 

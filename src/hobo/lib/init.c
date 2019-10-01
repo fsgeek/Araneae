@@ -26,11 +26,11 @@ const uuid_t hobo_container_relationship_uuid = {0xe3, 0xf6, 0x12, 0xef, 0x4d, 0
 static struct stat root_statbuf;
 void *hobo_db;
 static const char *hobo_db_name = "hobo";
-hobodb_base_t *hobo_root_object; 
+hobodb_base_t *hobo_root_object;
+int hobo_initialized;
 
 static void init(void *userdata, struct fuse_conn_info *conn)
 {
-    static int initialized = 0;
     char dbname[16];
     uuid_t test_uuid;
     hobo_util_create_parameters_t params;
@@ -39,7 +39,7 @@ static void init(void *userdata, struct fuse_conn_info *conn)
 
     // TODO: initialization
 
-    while (!initialized) {
+    while (!hobo_initialized) {
         // initialization logic goes here
         uuid_parse(hobo_root_uuid_str, test_uuid);
         assert(0 == uuid_compare(test_uuid, hobo_root_uuid));
@@ -69,16 +69,22 @@ static void init(void *userdata, struct fuse_conn_info *conn)
         // or just eliminate this entirely in favor of a synthetically generated initial directory view
         // (which is my preference)
         memset(&params, 0, sizeof(params));
+        params.type = hobo_base_object_type;
+        uuid_copy(params.uuid, hobo_root_uuid);
         params.parameters.base_object_parameters.uri.prefix = NULL;
         params.parameters.base_object_parameters.uri.name = "";
         hobo_root_object = hobo_util_create_object(&params);
         assert(NULL != hobo_root_object);
         assert(0 == hobo_util_encode_object(hobo_db, hobo_root_object));
 
+        // sanity check
+        assert(NULL != hobodb_lookup_object(hobo_db, hobo_root_uuid)); 
+        assert(0 == uuid_compare(hobo_root_uuid, root_hob->uuid));
+
         //
         // Done
         //
-        initialized = 1;
+        hobo_initialized = 1;
     }
 }
 

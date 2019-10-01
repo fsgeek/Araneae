@@ -30,6 +30,7 @@
 
 typedef struct _hobo_util_create_object_parameters_t {
     hobo_object_types_t type;
+    uuid_t uuid; // clear = generate, !clear = use
     union {
         struct {
             struct {

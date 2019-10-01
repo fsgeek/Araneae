@@ -12,8 +12,8 @@
 static void hmkdir(fuse_req_t req, fuse_ino_t parent, const char *name, mode_t mode)
 {
     hobo_object_t *pob = NULL;
-    hobodb_base_t *dbpob = NULL;
     hobo_object_t *nob = NULL;
+    hobodb_base_t *dbpob = NULL;
     hobodb_base_t *dbnob = NULL;
     hobodb_relationship_t *dbrob = NULL;
     struct fuse_entry_param e;
@@ -26,7 +26,7 @@ static void hmkdir(fuse_req_t req, fuse_ino_t parent, const char *name, mode_t m
     memset(&e, 0, sizeof(e));
 
     hobodb_lookup_record_type_uuid("relationship", relationship_uuid);
-    assert(0 != uuid_is_null(relationship_uuid));
+    assert(0 == uuid_is_null(relationship_uuid));
 
     pob = hobo_object_lookup_by_ino(parent);
     if (NULL == pob) {
@@ -64,7 +64,7 @@ static void hmkdir(fuse_req_t req, fuse_ino_t parent, const char *name, mode_t m
     assert(NULL != nob_statbuf);
 
     nob_statbuf->st_ino = 0; // TODO: I need a number here...
-    nob_statbuf->st_mode = S_IFDIR | 0755;
+    nob_statbuf->st_mode = S_IFDIR | mode;
     nob_statbuf->st_nlink = 1;
     nob_statbuf->st_uid = getuid();
     nob_statbuf->st_gid = getgid();
@@ -78,19 +78,23 @@ static void hmkdir(fuse_req_t req, fuse_ino_t parent, const char *name, mode_t m
     assert(0 == hobo_util_encode_object(hobo_db, dbnob));
     assert(0 == hobo_util_encode_object(hobo_db, (hobodb_base_t *)dbrob));
 
-    // add to the inode table
-    // TODO: need to refactor this around the interface!
-    //       (1) Get an inode number
-    //       (2) use the database uuid
-    //       (3) use the stat structure we _just_ filled.
+    // add to the inode table:
+    //    (1) get an inode number
+    //    (2) insert, using the uuid assigned by the database
+    //    (3) make sure the insertion worked
     //
-    assert(0); 
-    // root_hob = hobo_object_create(FUSE_ROOT_ID, hobo_root_uuid, &root_statbuf);
+    nob_statbuf->st_ino = hobo_get_inode_number();
+
+    // quick sanity check - make sure this isn't a duplicate
+    assert(NULL == hobo_object_lookup_by_ino(nob_statbuf->st_ino));
+    assert(NULL == hobo_object_lookup_by_uuid(&dbnob->uuid));
+
+    nob = hobo_object_create(nob_statbuf->st_ino, &dbnob->uuid, &nob_statbuf);
+    assert(NULL != nob);
 
     // respond
     fuse_reply_entry(req, &e);
 
-    fuse_reply_err(req, ENOTSUP);
     return;
 }
 

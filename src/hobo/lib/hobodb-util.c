@@ -15,7 +15,7 @@
 // prefix - the URI prefix (optional)
 // name - the URI name portion (required)
 //
-static hobodb_base_t *create_base_object(const char *prefix, const char *name)
+static hobodb_base_t *create_base_object(const uuid_t uuid, const char *prefix, const char *name)
 {
     hobodb_base_t *object = NULL;
 
@@ -24,6 +24,10 @@ static hobodb_base_t *create_base_object(const char *prefix, const char *name)
     object = hobodb_alloc_base();
     while (NULL != object) {
 
+        if (!uuid_is_null(uuid)) {
+            // override generated uuid
+            uuid_copy(object->uuid, uuid);
+        }
         object->ctime = time(NULL);
         object->atime = object->ctime;
         if (NULL != prefix) {
@@ -41,11 +45,12 @@ static hobodb_base_t *create_base_object(const char *prefix, const char *name)
 //
 // create_relationship_object
 //
+// uuid - the uuid to use for this object (generated if uuid is null)
 // object1 - first object (required)
 // object2 - second object (required)
 // relationship_uuid - identifies the type of relationship (required)
 //
-static hobodb_relationship_t *create_relationship_object(const uuid_t object1, const uuid_t object2, const uuid_t relationship_uuid)
+static hobodb_relationship_t *create_relationship_object(const uuid_t uuid, const uuid_t object1, const uuid_t object2, const uuid_t relationship_uuid)
 {
     hobodb_relationship_t *object = NULL;
 
@@ -56,6 +61,9 @@ static hobodb_relationship_t *create_relationship_object(const uuid_t object1, c
     object = hobodb_alloc_relationship();
 
     while (NULL != object) {
+        if (!uuid_is_null(uuid)) {
+            uuid_copy(object->uuid, uuid);
+        }
         uuid_copy(object->object1, object1);
         uuid_copy(object->object2, object2);
         uuid_copy(object->relationship, relationship_uuid);
@@ -67,24 +75,27 @@ static hobodb_relationship_t *create_relationship_object(const uuid_t object1, c
     return object;
 }
 
-static hobodb_properties_t *create_property_object(const uuid_t object, const uuid_t property_uuid)
+static hobodb_properties_t *create_property_object(const uuid_t uuid, const uuid_t object, const uuid_t property_uuid)
 {
+    (void) uuid;
     assert(0 != uuid_is_null(object));
     assert(0 != uuid_is_null(property_uuid));
     assert(0); // not implemented yet
     return NULL;
 }
 
-static hobodb_attributes_t *create_attribute_object(const uuid_t object, const uuid_t attribute_uuid)
+static hobodb_attributes_t *create_attribute_object(const uuid_t uuid, const uuid_t object, const uuid_t attribute_uuid)
 {
+    (void) uuid;
     assert(0 != uuid_is_null(object));
     assert(0 != uuid_is_null(attribute_uuid));
     assert(0); // not implemented yet
     return NULL;
 }
 
-static hobodb_label_t *create_label_object(const uuid_t object, const uuid_t label_uuid, const char *value)
+static hobodb_label_t *create_label_object(const uuid_t uuid, const uuid_t object, const uuid_t label_uuid, const char *value)
 {
+    (void) uuid;
     assert(0 != uuid_is_null(object));
     assert(0 != uuid_is_null(label_uuid));
     assert(NULL != value);
@@ -110,28 +121,33 @@ hobodb_base_t *hobo_util_create_object(hobo_util_create_parameters_t *param)
             break;
         }
         case hobo_base_object_type: {
-            object = create_base_object(param->parameters.base_object_parameters.uri.prefix, 
+            object = create_base_object(param->uuid,
+                                        param->parameters.base_object_parameters.uri.prefix, 
                                         param->parameters.base_object_parameters.uri.name);
             break;
         }
         case hobo_relationship_object_type: {
-            object = create_relationship_object(param->parameters.relationship_object_parameters.object1, 
+            object = create_relationship_object(param->uuid,
+                                                param->parameters.relationship_object_parameters.object1, 
                                                 param->parameters.relationship_object_parameters.object2, 
                                                 param->parameters.relationship_object_parameters.relationship);
             break;
         }
         case hobo_property_object_type: {
-            object = create_property_object(param->parameters.property_object_parameters.object, 
+            object = create_property_object(param->uuid,
+                                            param->parameters.property_object_parameters.object, 
                                             param->parameters.property_object_parameters.property);
             break;
         }
         case hobo_attribute_object_type: {
-            object = create_attribute_object(param->parameters.attribute_object_parameters.object, 
+            object = create_attribute_object(param->uuid,
+                                             param->parameters.attribute_object_parameters.object, 
                                              param->parameters.attribute_object_parameters.property);
             break;
         }
         case hobo_label_object_type: {
-            object = create_label_object(param->parameters.label_object_parameters.object,
+            object = create_label_object(param->uuid,
+                                         param->parameters.label_object_parameters.object,
                                          param->parameters.label_object_parameters.uuid,
                                          param->parameters.label_object_parameters.label);
             break;
