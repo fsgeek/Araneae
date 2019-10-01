@@ -313,6 +313,7 @@ struct fuse_req {
 struct fuse_req {
     void *must_be_null; // corresponds to the fuse_session, which we aren't using
     // fields here can be used to validate the expected results.
+    int expected_status;
 };
 
 const uuid_t hobo_root_uuid = {0x71, 0x9d, 0x92, 0xf9, 0x19, 0x64, 0x49, 0xdb, 0x98, 0x1d, 0xb4, 0xbd, 0x77, 0x44, 0x95, 0x1b};
@@ -336,7 +337,7 @@ int fuse_reply_err(fuse_req_t req, int err)
 {
     assert(NULL != req);
     assert(NULL == req->must_be_null);
-    (void) err;
+    assert(req->expected_status == err);
     return 0;
 }
 
@@ -351,7 +352,7 @@ int fuse_reply_entry(fuse_req_t req, const struct fuse_entry_param *e)
 {
     assert(NULL != req);
     assert(NULL == req->must_be_null);
-    (void) e;
+    assert(NULL != e);
     return 0;
 }
 
@@ -360,8 +361,8 @@ int fuse_reply_create(fuse_req_t req, const struct fuse_entry_param *e,
 {
     assert(NULL != req);
     assert(NULL == req->must_be_null);
-    (void) e;
-    (void) fi;
+    assert(NULL != e);
+    assert(NULL != fi);
     return 0;
 }
 
@@ -379,7 +380,7 @@ int fuse_reply_open(fuse_req_t req, const struct fuse_file_info *fi)
 {
     assert(NULL != req);
     assert(NULL == req->must_be_null);
-    (void) fi;
+    assert(NULL != fi);
     return 0;
 
 }
@@ -454,6 +455,31 @@ int fuse_reply_bmap(fuse_req_t req, uint64_t idx)
     return 0;
 }
 
+static MunitResult
+test_opendir(
+    const MunitParameter params[] __notused,
+    void *prv __notused
+)
+{
+    struct fuse_req req; 
+    struct fuse_file_info fi;
+    hobo_init(NULL, NULL);
+
+    dump_db(hobo_db);
+
+    memset(&req, 0, sizeof(req));
+    req.expected_status = 0;
+
+    hobo_opendir(&req, (fuse_ino_t) FUSE_ROOT_ID, &fi);
+
+    hobo_releasedir(&req, (fuse_ino_t) FUSE_ROOT_ID, &fi);
+
+    // cleanup
+    hobo_destroy(NULL);
+
+    return MUNIT_OK;
+} 
+
 
 static MunitResult
 test_mkdir(
@@ -462,19 +488,51 @@ test_mkdir(
 )
 {
     struct fuse_req req; 
+    struct fuse_file_info fi;
     hobo_init(NULL, NULL);
 
     dump_db(hobo_db);
 
     memset(&req, 0, sizeof(req));
+    req.expected_status = 0;
+
     hobo_mkdir(&req, (fuse_ino_t) FUSE_ROOT_ID, "test1", 0755);
+
+    hobo_opendir(&req, (fuse_ino_t) FUSE_ROOT_ID, &fi);
 
     // cleanup
     hobo_destroy(NULL);
-    // Dummy test for the moment.
+
     return MUNIT_OK;
 } 
 
+static MunitResult
+test_readdir(
+    const MunitParameter params[] __notused,
+    void *prv __notused
+)
+{
+    struct fuse_req req; 
+    struct fuse_file_info fi;
+    char *buffer[4096];
+
+    hobo_init(NULL, NULL);
+
+    dump_db(hobo_db);
+
+    memset(&req, 0, sizeof(req));
+    req.expected_status = 0;
+
+    hobo_mkdir(&req, (fuse_ino_t) FUSE_ROOT_ID, "test1", 0755);
+    hobo_opendir(&req, (fuse_ino_t) FUSE_ROOT_ID, &fi);
+
+    hobo_readdir(&req, (fuse_ino_t) FUSE_ROOT_ID, sizeof(buffer), 0, &fi);
+
+    // cleanup
+    hobo_destroy(NULL);
+
+    return MUNIT_OK;
+} 
 
 
 #define TEST(_name, _func, _params)             \
@@ -498,7 +556,9 @@ main(
         TEST((char *)(uintptr_t)"/hobodb/db_base", test_db_base, NULL),
         TEST((char *)(uintptr_t)"/hobodb/db_relationship", test_db_relationship, NULL),
         TEST((char *)(uintptr_t)"/hobodb/init", test_init, NULL),
+        TEST((char *)(uintptr_t)"/hobodb/opendir", test_opendir, NULL),
         TEST((char *)(uintptr_t)"/hobodb/mkdir", test_mkdir, NULL),
+        TEST((char *)(uintptr_t)"/hobodb/readdir", test_readdir, NULL),
         TEST(NULL, NULL, NULL),
     };
     static const MunitSuite suite = {

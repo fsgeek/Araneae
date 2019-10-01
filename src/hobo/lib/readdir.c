@@ -57,6 +57,8 @@ static void readdir(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, stru
             break;
         }
 
+        // TODO: need to enumerate the "directory"
+
         /*
          * at this point I'm done
          */
