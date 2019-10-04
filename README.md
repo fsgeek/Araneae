@@ -1,3 +1,4 @@
+![Spider Image](docs/pictures/AdobeStock_177444483.jpeg)
 # Araneidae
 
 _Constructing relationship webs in unstructured information._
