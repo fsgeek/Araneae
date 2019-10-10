@@ -24,6 +24,7 @@
 #include <hobo.h>
 #include <hobodb.h>
 #include <hobodb-util.h>
+#include "fuse_kernel.h"
 
 #if !defined(__notused)
 #define __notused __attribute__((unused))
@@ -314,6 +315,8 @@ struct fuse_req {
     void *must_be_null; // corresponds to the fuse_session, which we aren't using
     // fields here can be used to validate the expected results.
     int expected_status;
+    void *buffer;
+    size_t length;
 };
 
 const uuid_t hobo_root_uuid = {0x71, 0x9d, 0x92, 0xf9, 0x19, 0x64, 0x49, 0xdb, 0x98, 0x1d, 0xb4, 0xbd, 0x77, 0x44, 0x95, 0x1b};
@@ -398,8 +401,11 @@ int fuse_reply_buf(fuse_req_t req, const char *buf, size_t size)
 {
     assert(NULL != req);
     assert(NULL == req->must_be_null);
-    (void) buf;
-    (void) size;
+    assert(NULL != buf);
+    assert(0 != size);
+    assert(size <= req->length);
+    memcpy(req->buffer, buf, size);
+    req->length = size;
     return 0;
 
 }
@@ -514,7 +520,19 @@ test_readdir(
 {
     struct fuse_req req; 
     struct fuse_file_info fi;
-    char *buffer[4096];
+
+    char buffer[4096];
+#if 0
+    struct fuse_dirent {
+        uint64_t	ino;
+        uint64_t	off;
+        uint32_t	namelen;
+        uint32_t	type;
+        char name[];
+    };
+#endif // 0
+    struct fuse_dirent *dirent = (struct fuse_dirent *)buffer;
+    size_t length = 0;
 
     hobo_init(NULL, NULL);
 
@@ -522,11 +540,28 @@ test_readdir(
 
     memset(&req, 0, sizeof(req));
     req.expected_status = 0;
+    req.buffer = buffer;
+    req.length = sizeof(buffer);
+
+    memset(buffer, 0, sizeof(buffer));
 
     hobo_mkdir(&req, (fuse_ino_t) FUSE_ROOT_ID, "test1", 0755);
     hobo_opendir(&req, (fuse_ino_t) FUSE_ROOT_ID, &fi);
 
     hobo_readdir(&req, (fuse_ino_t) FUSE_ROOT_ID, sizeof(buffer), 0, &fi);
+    munit_assert(req.buffer == buffer);
+    munit_assert(req.length >= sizeof(struct fuse_dirent));
+    munit_assert(req.length <= sizeof(buffer));
+
+    munit_assert((fuse_ino_t) FUSE_ROOT_ID == dirent->ino);
+
+    do {
+        // TODO... add some logic to validate
+        dirent = (struct fuse_dirent *)(buffer + length);
+        munit_assert(dirent->ino >= (fuse_ino_t) FUSE_ROOT_ID);
+        length += FUSE_DIRENT_SIZE(dirent);
+    }
+    while (length < req.length);
 
     // cleanup
     hobo_destroy(NULL);

@@ -16,6 +16,8 @@ static void readdir(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, stru
     char *buffer = NULL;
     size_t length = 0;
     int responded = 0;
+    void *results =  NULL;
+    hobodb_relationship_t *relationship_found = NULL;
 
     fprintf(stderr, "HoboFS: called %s, req = 0x%p, ino = %lu, size = %zu, off = %zu, fi = 0x%p\n",__PRETTY_FUNCTION__, req, ino, size, off, fi);
 
@@ -58,6 +60,33 @@ static void readdir(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, stru
         }
 
         // TODO: need to enumerate the "directory"
+
+        results = hobodb_lookup_relationship(hobo_db, hob->uuid);
+
+        for (relationship_found = hobodb_lookup_relationship_next(results); 
+             relationship_found; 
+             relationship_found = hobodb_lookup_relationship_next(results)) {
+
+            // TODO: need to add directory entry here
+            // TODO: deal with the case where they don't all fit (ergo, this is a continuation)
+            // length += fuse_add_direntry(req, buffer+length, size - length, )
+        }
+
+#if 0
+            //
+    // Now let's try to find all the relationships for a given object
+    //
+    void *results = hobodb_lookup_relationship(db, object1->uuid);
+    assert(NULL != results);
+
+    while ((relationship_found = hobodb_lookup_relationship_next(results))) {
+        assert(0 == uuid_compare(relationship->uuid, relationship_found->uuid));
+        hobodb_free_relationship(relationship_found);
+        count++;
+    }
+    assert(count > 0);
+#endif // 0
+
 
         /*
          * at this point I'm done
