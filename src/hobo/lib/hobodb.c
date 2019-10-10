@@ -97,7 +97,7 @@ static int generic_base_encode(void *db, hobodb_base_t *base, int initial)
     wg_int enc_uuid;
     wg_int enc_ctime;
     wg_int enc_atime;
-    wg_int enc_uri;
+    wg_int enc_uri = 0;
     int encoded = 0;
     char uuid_type[8];
 
@@ -833,7 +833,7 @@ void *hobodb_lookup_relationship(void *db, const uuid_t object)
     void *rec = NULL;
     char uuid_string[40];
     wg_int lock_id;
-    unsigned count;
+    unsigned count = 0;
     list_entry_t *list = NULL;
     struct relationship_list *list_entry = NULL;
 
